@@ -1,0 +1,91 @@
+{
+  "_meta": {
+    "version": "0.1-prototype",
+    "status": "INDICATIVE — class-typical values, not vessel-specific",
+    "sources": {
+      "UNCTAD": {
+        "url": "https://unctadstat.unctad.org/insights/theme/107",
+        "used_for": "Fleet context only. The page reports fleet capacity in dwt by vessel type and ownership/registry; it does NOT publish per-class dimensions (draft, LOA, beam).",
+        "facts": {
+          "worldFleetCapacityDwt": 2500000000.0,
+          "asOf": "2026-01-01",
+          "tankersAndBulkCarriersShare": 0.69,
+          "dataUpdated": "2026-06-18"
+        }
+      },
+      "mockData.js": "Per-class draft/beam/LOA/dwt/capacity are taken from the dashboard's mock store so backend and UI agree. Standard class conventions; verify against a fleet database before publishing.",
+      "assumptions block": "Speed and bunker consumption are NOT from the listed sources; they are indicative placeholders for the cost engine. Replace with real figures."
+    },
+    "modelingNote": "designLadenDraftM is the draft at full deadweight. Actual draft depends on cargo carried (a Capesize carrying 50,000 MT draws far less than 18.2 m). The rule engine should scale draft with cargo, otherwise it wrongly excludes large vessels on partial parcels."
+  },
+  "vesselTypes": [
+    {
+      "id": "handysize",
+      "name": "Handysize",
+      "typicalDwtRange": [
+        10000,
+        39999
+      ],
+      "referenceDwt": 38000,
+      "designLadenDraftM": 10.5,
+      "beamM": 28.4,
+      "loaM": 180,
+      "cargoCapacityMT": 35000,
+      "assumptions": {
+        "serviceSpeedKnots": 13.0,
+        "bunkerConsumptionMTPerDay": 24
+      }
+    },
+    {
+      "id": "supramax",
+      "name": "Supramax / Ultramax",
+      "typicalDwtRange": [
+        50000,
+        66000
+      ],
+      "referenceDwt": 58000,
+      "designLadenDraftM": 12.8,
+      "beamM": 32.2,
+      "loaM": 190,
+      "cargoCapacityMT": 58000,
+      "assumptions": {
+        "serviceSpeedKnots": 14.0,
+        "bunkerConsumptionMTPerDay": 28
+      }
+    },
+    {
+      "id": "panamax",
+      "name": "Panamax / Kamsarmax",
+      "typicalDwtRange": [
+        70000,
+        85000
+      ],
+      "referenceDwt": 76000,
+      "designLadenDraftM": 14.2,
+      "beamM": 32.2,
+      "loaM": 225,
+      "cargoCapacityMT": 75000,
+      "assumptions": {
+        "serviceSpeedKnots": 14.0,
+        "bunkerConsumptionMTPerDay": 30
+      }
+    },
+    {
+      "id": "capesize",
+      "name": "Capesize",
+      "typicalDwtRange": [
+        100000,
+        210000
+      ],
+      "referenceDwt": 181000,
+      "designLadenDraftM": 18.2,
+      "beamM": 45.0,
+      "loaM": 292,
+      "cargoCapacityMT": 180000,
+      "assumptions": {
+        "serviceSpeedKnots": 14.0,
+        "bunkerConsumptionMTPerDay": 55
+      }
+    }
+  ]
+}

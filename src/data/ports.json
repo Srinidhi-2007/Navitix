@@ -1,0 +1,219 @@
+{
+  "_meta": {
+    "version": "0.1-prototype",
+    "sources": {
+      "paradip-official-home": {
+        "url": "https://paradipport.gov.in/berth_spec.aspx",
+        "supports": "Port-wide Capesize envelope: LOA 300 m, beam 46 m, 155,000 DWT, max draft 16.5 m"
+      },
+      "paradip-2020-notification": {
+        "url": "https://paradipport.gov.in/Writereaddata/News/DRAFT_BERTHS_03.07.2020.pdf",
+        "supports": "Per-berth max LOA/beam/draft (Marine Dept notification dated 03.07.2020; superseded by later notices are possible). Retrieved from a search-result excerpt, so berths 9 onward and berth 7's second line are not captured."
+      },
+      "press-2026-09": {
+        "url": "https://indiashippingnews.com/major-port/paradip-port-achieves-historic-milestone-with-first-ever-capesize-vessel-berthing-at-western-dock-1/",
+        "supports": "First Capesize (MV Mineral Kwangyang, 292 m x 45 m, 16.5 m draft, 152,702 MT coking coal from Hay Point) berthed at Western Dock-1"
+      },
+      "press-2026-09-deep-draft": {
+        "url": "https://www.aninews.in/news/national/general-news/paradip-port-achieves-major-milestone-berths-first-capesize-vessel-with-165-meter-draft20260906125331/",
+        "supports": "Port reported as having 18.5 m deep-draft capability (ministry release); meaning for individual berths not specified"
+      },
+      "mockData.js": "Placeholder values for non-Paradip ports so the 3 demo routes run. NOT verified."
+    },
+    "notRetrieved": "paradipport.gov.in/berth-specifications/ blocks automated access (robots), so that page was not read directly. Berth lengths and handling rates are not available from the sources above.",
+    "gaps": [
+      "Vizag, Gangavaram, Gopalpur, Dhamra, Haldia, Sagar-Sandheads not yet added (their own port-authority sources are needed).",
+      "handlingCapacityMTPD and berthLengthM for Paradip are mock placeholders."
+    ]
+  },
+  "ports": [
+    {
+      "id": "paradip",
+      "name": "Paradip Port",
+      "country": "India",
+      "role": "discharge",
+      "coast": "east",
+      "lat": 20.2654,
+      "lon": 86.6763,
+      "verified": true,
+      "unlocode": "INPBD",
+      "portEnvelope": {
+        "maxLoaM": 300,
+        "maxBeamM": 46,
+        "maxDwt": 155000,
+        "maxDraftM": 16.5,
+        "sourceKey": "paradip-official-home"
+      },
+      "berths": [
+        {
+          "id": "berth-02",
+          "name": "Berth 2 (New Iron Ore Berth)",
+          "cargoClass": "iron_ore",
+          "maxLoaM": 300,
+          "maxBeamM": 48,
+          "maxDraftM": 14.5,
+          "status": "operational",
+          "sourceKey": "paradip-2020-notification"
+        },
+        {
+          "id": "berth-04",
+          "name": "Berth 4 (Iron Ore Berth)",
+          "cargoClass": "iron_ore",
+          "maxLoaM": 235,
+          "maxBeamM": 33,
+          "maxDraftM": 13.0,
+          "status": "operational",
+          "sourceKey": "paradip-2020-notification"
+        },
+        {
+          "id": "berth-05",
+          "name": "Berth 5 (Coal Berth-1)",
+          "cargoClass": "coal",
+          "maxLoaM": 300,
+          "maxBeamM": 48,
+          "maxDraftM": 14.5,
+          "status": "operational",
+          "sourceKey": "paradip-2020-notification",
+          "note": "Subject to Iron Ore Berth being vacant"
+        },
+        {
+          "id": "berth-06",
+          "name": "Berth 6 (Coal Berth-2)",
+          "cargoClass": "coal",
+          "maxLoaM": 230,
+          "maxBeamM": 33,
+          "maxDraftM": 14.5,
+          "status": "operational",
+          "sourceKey": "paradip-2020-notification"
+        },
+        {
+          "id": "berth-07",
+          "name": "Berth 7 (East Quay-3)",
+          "cargoClass": "general_dry_bulk",
+          "maxLoaM": 230,
+          "maxBeamM": 33,
+          "maxDraftM": 14.0,
+          "status": "operational",
+          "sourceKey": "paradip-2020-notification"
+        },
+        {
+          "id": "wd-1",
+          "name": "Western Dock-1 (WD-1)",
+          "cargoClass": "coal",
+          "maxLoaM": 300,
+          "maxBeamM": 46,
+          "maxDraftM": 16.5,
+          "status": "operational",
+          "sourceKey": "press-2026-09",
+          "note": "Draft/beam/LOA are the demonstrated Sept 2026 Capesize call (292 m x 45 m x 16.5 m) and the port-wide Capesize envelope, not a per-berth notification"
+        },
+        {
+          "id": "berth-01",
+          "name": "Berth 1 (North Oil Jetty)",
+          "cargoClass": "liquid",
+          "maxLoaM": 260,
+          "maxBeamM": 45,
+          "maxDraftM": 13.5,
+          "status": "operational",
+          "sourceKey": "paradip-2020-notification",
+          "minLoaM": 148,
+          "note": "Liquid cargo; excluded from dry bulk matching"
+        }
+      ],
+      "handlingCapacityMTPD": 35000,
+      "handlingSource": "mockData.js placeholder",
+      "defaultCongestionDays": 1.8,
+      "berthLengthM": null
+    },
+    {
+      "id": "hay-point",
+      "name": "Hay Point Coal Terminal (DBCT)",
+      "country": "Australia",
+      "role": "load",
+      "coast": "pacific",
+      "lat": -21.3,
+      "lon": 149.3,
+      "coordinatesApprox": true,
+      "maxDraftM": 19.5,
+      "maxLoaM": 300,
+      "maxBeamM": 50,
+      "berthLengthM": 350,
+      "handlingCapacityMTPD": 65000,
+      "defaultCongestionDays": 1.4,
+      "verified": false,
+      "sourceKey": "mockData.js"
+    },
+    {
+      "id": "port-hedland",
+      "name": "Port Hedland",
+      "country": "Australia",
+      "role": "load",
+      "coast": "pacific",
+      "lat": -20.31,
+      "lon": 118.58,
+      "coordinatesApprox": true,
+      "maxDraftM": 19.8,
+      "maxLoaM": 330,
+      "maxBeamM": null,
+      "berthLengthM": 360,
+      "handlingCapacityMTPD": 120000,
+      "defaultCongestionDays": 0.9,
+      "verified": false,
+      "sourceKey": "mockData.js"
+    },
+    {
+      "id": "qingdao",
+      "name": "Qingdao Qianwan Ore Terminal",
+      "country": "China",
+      "role": "discharge",
+      "coast": "pacific",
+      "lat": 36.0,
+      "lon": 120.2,
+      "coordinatesApprox": true,
+      "maxDraftM": 21.5,
+      "maxLoaM": 350,
+      "maxBeamM": null,
+      "berthLengthM": 400,
+      "handlingCapacityMTPD": 85000,
+      "defaultCongestionDays": 1.5,
+      "verified": false,
+      "sourceKey": "mockData.js"
+    },
+    {
+      "id": "santos",
+      "name": "Port of Santos (Outer Basin)",
+      "country": "Brazil",
+      "role": "load",
+      "coast": "atlantic",
+      "lat": -23.96,
+      "lon": -46.3,
+      "coordinatesApprox": true,
+      "maxDraftM": 14.5,
+      "maxLoaM": 280,
+      "maxBeamM": null,
+      "berthLengthM": 310,
+      "handlingCapacityMTPD": 40000,
+      "defaultCongestionDays": 2.3,
+      "verified": false,
+      "sourceKey": "mockData.js"
+    },
+    {
+      "id": "alexandria",
+      "name": "Port of Alexandria Grain Terminal",
+      "country": "Egypt",
+      "role": "discharge",
+      "coast": "mediterranean",
+      "lat": 31.2,
+      "lon": 29.9,
+      "coordinatesApprox": true,
+      "maxDraftM": 13.5,
+      "maxLoaM": 220,
+      "maxBeamM": null,
+      "berthLengthM": 240,
+      "handlingCapacityMTPD": 25000,
+      "defaultCongestionDays": 1.8,
+      "verified": false,
+      "sourceKey": "mockData.js"
+    }
+  ]
+}

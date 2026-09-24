@@ -1,0 +1,35 @@
+{
+  "_meta": {
+    "version": "0.1-prototype",
+    "description": "Supported demo routes for Charter AI decision dashboard"
+  },
+  "routes": [
+    {
+      "id": "aus-paradip-coking-coal",
+      "originPortId": "hay-point",
+      "destinationPortId": "paradip",
+      "defaultCargoType": "Coking Coal",
+      "defaultCargoMT": 50000,
+      "distanceNM": 4620,
+      "distanceSource": "dashboard mock"
+    },
+    {
+      "id": "aus-qingdao-iron-ore",
+      "originPortId": "port-hedland",
+      "destinationPortId": "qingdao",
+      "defaultCargoType": "Iron Ore Fines",
+      "defaultCargoMT": 70000,
+      "distanceNM": null,
+      "distanceSource": null
+    },
+    {
+      "id": "brazil-alexandria-soybeans",
+      "originPortId": "santos",
+      "destinationPortId": "alexandria",
+      "defaultCargoType": "Soybeans in Bulk",
+      "defaultCargoMT": 38000,
+      "distanceNM": null,
+      "distanceSource": null
+    }
+  ]
+}

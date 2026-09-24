@@ -44,11 +44,11 @@ The UI is built on a dark naval telemetry design system with glassmorphic transl
 
 ---
 
-## 📱 Modules & Pages
+##  Modules & Pages
 
 ```
-⚓ CHARTER AI
-├── 📊 Overview / Decision Dashboard (Home)
+CHARTER AI
+├── Overview / Decision Dashboard (Home)
 │   ├── Hero recommendation card (Panamax, timing action, expected cost)
 │   ├── 5 KPI HUD readout cards
 │   ├── Embedded freight forecast mini-chart
@@ -57,42 +57,42 @@ The UI is built on a dark naval telemetry design system with glassmorphic transl
 │   ├── Alerts & insights live feed
 │   └── "CHARTER NOW" primary CTA modal trigger
 │
-├── 🚢 Vessel & Route + Port Constraints
+├── Vessel & Route + Port Constraints
 │   ├── Interactive voyage & laycan input section
 │   ├── 4-vessel feasibility check with draft limitation explanations
 │   ├── Side-by-side loading port & discharge port constraint cards
 │   └── Port draft feasibility spectrum comparative bar chart
 │
-├── 📈 Freight Forecast
+├── Freight Forecast
 │   ├── 45-day continuous timeline chart (historical spot + 14-day predicted)
 │   ├── Shaded 95% confidence interval envelope & BPI benchmark
 │   ├── Current market rate pin & optimal charter window trough marker
 │   └── 3 key stat callouts (Current rate, Trough rate, Expected change)
 │
-├── 💰 Cost Analysis
+├── Cost Analysis
 │   ├── Recommended vessel itemized cost breakdown (Freight, Demurrage, Bunkers, Misc)
 │   ├── Stacked visual cost bar with currency switcher (₹ Cr / $ USD)
 │   ├── Cross-fleet comparison matrix highlighting Panamax ₹1.35 Cr savings
 │   └── Port waiting time breakdown explicitly included in total cost
 │
-├── ⚠️ Risk & Scenario Analysis + Forecast Confidence
+├── Risk & Scenario Analysis + Forecast Confidence
 │   ├── Discrete risk factor audit (Volatility, Congestion, Uncertainty, Availability)
 │   ├── 3 outcome scenarios (Best Case, Expected Case, Worst Case)
 │   ├── Confidence telemetry gauge (87%) with low-confidence guardrails
 │   └── Model feature attribution weights
 │
-├── 🏆 Compare Vessels
+├── Compare Vessels
 │   ├── 3 side-by-side standardized cards (Panamax, Supramax, Handysize)
 │   └── Recommended pick highlighted with an orange border and warm glow
 │
-└── ⚙ Settings
+└── Settings
     ├── Commercial assumptions (currency, demurrage rate, bunker price index)
     └── Machine learning model API hook simulation & JSON payload preview
 ```
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Node.js 18+ or 20+
@@ -119,7 +119,46 @@ Open [http://localhost:5173/](http://localhost:5173/) in your browser.
 
 ---
 
-## 🔌 Future Machine Learning Pipeline Ingestion
+### Backend Setup (FastAPI Service)
+
+#### 1. Navigate to the backend directory
+```bash
+cd charter-ai-backend
+```
+
+#### 2. Create and activate a virtual environment
+```bash
+# Create virtual environment
+python -m venv .venv
+
+# Activate on Windows (PowerShell):
+.venv\Scripts\Activate.ps1
+
+# Activate on Windows (Command Prompt):
+.venv\Scripts\activate.bat
+
+# Activate on macOS / Linux:
+source .venv/bin/activate
+```
+
+#### 3. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+#### 4. Run tests
+```bash
+pytest -q
+```
+
+#### 5. Run development server (when ready)
+```bash
+uvicorn main:app --reload --port 8000
+```
+
+---
+
+## Future Machine Learning Pipeline Ingestion
 
 All frontend panels consume from a single reactive mock data store located at `src/data/mockData.js`. 
 

@@ -24,8 +24,10 @@ export default function OverviewPage({ activeRoute, onOpenCharterModal, onNaviga
     const height = 110;
     const padding = 15;
 
-    const minVal = 26;
-    const maxVal = 33;
+    // Auto-scale Y axis from actual data (pad 1.5 on each side)
+    const allRates = points.flatMap(p => [p.actualRate, p.forecastRate].filter(v => v !== null));
+    const minVal = Math.floor(Math.min(...allRates) - 1.5);
+    const maxVal = Math.ceil(Math.max(...allRates) + 1.5);
     const range = maxVal - minVal;
 
     const getX = (index) => padding + (index / (points.length - 1)) * (width - 2 * padding);
@@ -43,16 +45,27 @@ export default function OverviewPage({ activeRoute, onOpenCharterModal, onNaviga
       .map((p, i) => `${i === 0 ? 'M' : 'L'} ${getX(points.indexOf(p))},${getY(p.forecastRate)}`)
       .join(' ');
 
-    // Current point index
-    const currentPointIndex = points.findIndex(p => p.isCurrent);
+    // Current point index (fallback: last historical point)
+    const currentPointIndex = points.findIndex(p => p.isCurrent) !== -1
+      ? points.findIndex(p => p.isCurrent)
+      : histPoints.length > 0 ? points.indexOf(histPoints[histPoints.length - 1]) : 0;
     const currentX = getX(currentPointIndex);
-    const currentY = getY(points[currentPointIndex].actualRate);
+    const currentY = getY(points[currentPointIndex]?.actualRate ?? points[currentPointIndex]?.forecastRate ?? 28);
 
     // Optimal window highlight rect
     const optStart = points.findIndex(p => p.inOptimalWindow);
     const optEnd = points.findLastIndex(p => p.inOptimalWindow);
     const optStartX = getX(optStart !== -1 ? optStart : 8);
     const optEndX = getX(optEnd !== -1 ? optEnd : 10);
+
+    // Trough point index & value
+    const troughIdx = points.findIndex(p => p.isTrough) !== -1 
+      ? points.findIndex(p => p.isTrough) 
+      : (freightForecast.troughDayOffset ? points.findIndex(p => p.dayOffset === freightForecast.troughDayOffset) : -1);
+    const safeTroughIdx = troughIdx !== -1 ? troughIdx : (optStart !== -1 ? optStart : 9);
+    const troughRate = freightForecast.troughRate ?? (points[safeTroughIdx]?.forecastRate ?? 27.9);
+    const troughY = getY(troughRate);
+    const troughX = getX(safeTroughIdx);
 
     return (
       <div className="relative w-full overflow-hidden">
@@ -112,21 +125,21 @@ export default function OverviewPage({ activeRoute, onOpenCharterModal, onNaviga
           {/* Current Rate Point */}
           <circle cx={currentX} cy={currentY} r="4" fill="#DCE5E7" stroke="#071014" strokeWidth="2" />
           <text x={currentX} y={currentY - 7} textAnchor="middle" fill="#DCE5E7" fontSize="8" fontFamily="JetBrains Mono">
-            ${points[currentPointIndex].actualRate}
+            ${points[currentPointIndex]?.actualRate ?? freightForecast.currentMarketRate}
           </text>
 
           {/* Optimal Trough Point */}
-          <circle cx={getX(points.findIndex(p => p.isTrough || p.dayOffset === 4))} cy={getY(27.9)} r="4" fill="#F47B3A" stroke="#071014" strokeWidth="2" />
-          <text x={getX(points.findIndex(p => p.isTrough || p.dayOffset === 4))} y={getY(27.9) + 13} textAnchor="middle" fill="#F47B3A" fontSize="8" fontFamily="JetBrains Mono" fontWeight="bold">
-            ${freightForecast.forecastRateIn7Days} (Day 4)
+          <circle cx={troughX} cy={troughY} r="4" fill="#F47B3A" stroke="#071014" strokeWidth="2" />
+          <text x={troughX} y={troughY + 13} textAnchor="middle" fill="#F47B3A" fontSize="8" fontFamily="JetBrains Mono" fontWeight="bold">
+            ${troughRate.toFixed(2)} (+{freightForecast.troughDayOffset ?? 4}D)
           </text>
         </svg>
 
         <div className="flex items-center justify-between text-[10px] font-mono-num text-[#82949A] mt-1 px-1">
-          <span>{points[0].date} (Past)</span>
-          <span className="text-[#DCE5E7] font-semibold">Today (Sep 06)</span>
-          <span className="text-[#F47B3A] font-semibold">Forecast Trough</span>
-          <span>{points[points.length - 1].date} (+14D)</span>
+          <span>{points[0]?.date || 'Past'}</span>
+          <span className="text-[#DCE5E7] font-semibold">Today ({points[currentPointIndex]?.date || 'Current'})</span>
+          <span className="text-[#F47B3A] font-semibold">Trough ({freightForecast.optimalWindowDateRange || 'Window'})</span>
+          <span>{points[points.length - 1]?.date || '+14D'}</span>
         </div>
       </div>
     );
@@ -185,7 +198,7 @@ export default function OverviewPage({ activeRoute, onOpenCharterModal, onNaviga
                 SYSTEM RECOMMENDATION
               </span>
               <span className="text-xs font-mono-num text-[#4FA69A] bg-[#4FA69A]/10 border border-[#4FA69A]/30 px-2 py-0.5 rounded">
-                87% CONFIDENCE
+                {heroDecision.forecastConfidencePct}% CONFIDENCE
               </span>
               <span className="text-xs font-mono-num text-[#DCE5E7] bg-[#20343C] border border-[#30454D] px-2 py-0.5 rounded hidden sm:inline-block">
                 FEASIBILITY: 100% COMPLIANT
@@ -309,13 +322,13 @@ export default function OverviewPage({ activeRoute, onOpenCharterModal, onNaviga
               </div>
               <div className="p-2 bg-[#0D1A20] rounded border border-[#F47B3A]/40 bg-[#F47B3A]/5">
                 <span className="text-[10px] font-hud uppercase tracking-wider text-[#F47B3A] block">TROUGH RATE</span>
-                <span className="font-mono-num font-bold text-[#F47B3A] text-sm">${freightForecast.forecastRateIn7Days}</span>
-                <span className="text-[10px] text-[#4FA69A] block">-5.1% in 4 days</span>
+                <span className="font-mono-num font-bold text-[#F47B3A] text-sm">${freightForecast.troughRate}</span>
+                <span className="text-[10px] text-[#4FA69A] block">{freightForecast.expectedChangePct}% · Day +{freightForecast.troughDayOffset}</span>
               </div>
               <div className="p-2 bg-[#0D1A20] rounded border border-[#30454D]">
-                <span className="text-[10px] font-hud uppercase tracking-wider text-[#82949A] block">POST-WINDOW</span>
-                <span className="font-mono-num font-bold text-[#DCE5E7] text-sm">$30.20</span>
-                <span className="text-[10px] text-[#D9573F] block">+8.2% rebound</span>
+                <span className="text-[10px] font-hud uppercase tracking-wider text-[#82949A] block">OPTIMAL WINDOW</span>
+                <span className="font-mono-num font-bold text-[#DCE5E7] text-sm">{freightForecast.optimalWindowDateRange}</span>
+                <span className="text-[10px] text-[#4FA69A] block">Charter timing target</span>
               </div>
             </div>
           </div>
@@ -328,7 +341,7 @@ export default function OverviewPage({ activeRoute, onOpenCharterModal, onNaviga
                   CANDIDATE FLEET COMPARISON
                 </h3>
                 <p className="text-[11px] text-[#82949A]">
-                  Total voyage cost & suitability comparison for 50,000 MT lot
+                  Total voyage cost & suitability comparison for {activeRoute.cargoQuantityMT.toLocaleString()} MT lot
                 </p>
               </div>
               <button
@@ -434,8 +447,19 @@ export default function OverviewPage({ activeRoute, onOpenCharterModal, onNaviga
             </ul>
 
             <div className="mt-4 pt-3 border-t border-[#30454D] flex items-center justify-between text-[11px] font-mono-num text-[#82949A]">
-              <span>DRAFT SURVEY: <strong className="text-[#4FA69A]">14.2m / 14.5m (PASS)</strong></span>
-              <span>PARCEL MATCH: <strong className="text-[#4FA69A]">100%</strong></span>
+              {(() => {
+                const recV = candidateVessels.find(v => v.isRecommended) || candidateVessels[0];
+                const discPort = activeRoute.portConstraints?.dischargePort;
+                const portLimit = discPort?.maxDraftMeters || 14.5;
+                const draft = recV?.draftMeters || '—';
+                const pass = recV && discPort ? recV.draftMeters <= portLimit : true;
+                return (
+                  <>
+                    <span>DRAFT SURVEY: <strong className={pass ? 'text-[#4FA69A]' : 'text-[#D9573F]'}>{draft}m / {portLimit}m ({pass ? 'PASS' : 'FAIL'})</strong></span>
+                    <span>PARCEL MATCH: <strong className="text-[#4FA69A]">100%</strong></span>
+                  </>
+                );
+              })()}
             </div>
           </div>
 

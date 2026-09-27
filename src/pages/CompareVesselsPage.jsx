@@ -32,7 +32,7 @@ export default function CompareVesselsPage({ activeRoute, onOpenCharterModal }) 
 
         <div className="flex items-center space-x-2 text-xs font-mono-num bg-[#16262D] border border-[#30454D] px-3 py-1.5 rounded-lg">
           <span className="text-[#82949A]">RECOMMENDED PICK:</span>
-          <span className="text-[#F47B3A] font-bold">PANAMAX (₹14.22 Cr)</span>
+          <span className="text-[#F47B3A] font-bold">{heroDecision.recommendedVesselName?.toUpperCase()} (₹{heroDecision.expectedTotalCostCr} Cr)</span>
         </div>
       </div>
 
@@ -139,7 +139,7 @@ export default function CompareVesselsPage({ activeRoute, onOpenCharterModal }) 
                       {isWinner ? (
                         <span className="text-[10px] text-[#4FA69A] block font-bold">Lowest in Class</span>
                       ) : (
-                        <span className="text-[10px] text-[#D9573F] block">+₹{(vessel.costBreakdownCr.total - 14.22).toFixed(2)} Cr higher</span>
+                        <span className="text-[10px] text-[#D9573F] block">+₹{(vessel.costBreakdownCr.total - heroDecision.expectedTotalCostCr).toFixed(2)} Cr higher</span>
                       )}
                     </div>
                   </div>
@@ -199,7 +199,7 @@ export default function CompareVesselsPage({ activeRoute, onOpenCharterModal }) 
                     onClick={onOpenCharterModal}
                     className="w-full py-3 bg-[#F47B3A] hover:bg-[#FF9A5A] text-white text-xs font-hud font-bold tracking-wider uppercase rounded-lg shadow-lg shadow-[#F47B3A]/30 transition-all flex items-center justify-center space-x-2 cursor-pointer"
                   >
-                    <span>CHARTER PANAMAX</span>
+                    <span>CHARTER {vessel.name.toUpperCase()}</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 ) : (
@@ -219,15 +219,15 @@ export default function CompareVesselsPage({ activeRoute, onOpenCharterModal }) 
           <div className="space-y-1">
             <div className="flex items-center space-x-2 text-xs font-hud font-bold text-[#D9573F] uppercase tracking-wider">
               <XCircle className="w-4 h-4" />
-              <span>EXCLUDED FLEET SEGMENT: CAPESIZE (180,000 DWT)</span>
+              <span>EXCLUDED FLEET SEGMENT: {excludedCapesize.name.toUpperCase()}</span>
             </div>
             <p className="text-xs text-[#82949A] max-w-3xl">
-              {excludedCapesize.feasibilityReason} Paradip maximum draft is 14.5m, making Capesize physically unviable for this voyage.
+              {excludedCapesize.feasibilityReason}
             </p>
           </div>
 
           <div className="shrink-0 text-xs font-mono-num text-[#82949A] bg-[#0D1A20] px-3 py-2 rounded-lg border border-[#30454D]">
-            Draft Required: <strong className="text-[#D9573F]">18.2m</strong> vs Max <strong className="text-[#DCE5E7]">14.5m</strong>
+            Draft Required: <strong className="text-[#D9573F]">{excludedCapesize.draftMeters}m</strong> vs Max <strong className="text-[#DCE5E7]">{activeRoute.portConstraints?.dischargePort?.maxDraftMeters || 14.5}m</strong>
           </div>
         </div>
       )}

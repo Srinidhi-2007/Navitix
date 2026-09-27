@@ -1,40 +1,53 @@
+/**
+ * Charter AI — Settings & ML Backend Telemetry
+ * File: src/pages/SettingsPage.jsx
+ *
+ * Configures commercial assumptions (currency, demurrage, bunker price, FX rate),
+ * tests backend health & data provenance, and inspects live JSON request/response telemetry.
+ */
+
 import React, { useState } from 'react';
 import { 
   Settings, 
   Cpu, 
   Database, 
-  Terminal, 
   CheckCircle2, 
   RefreshCw, 
   Save, 
   Sliders,
   DollarSign,
-  Layers,
-  Code
+  AlertTriangle,
+  Code,
+  Activity,
+  Layers
 } from 'lucide-react';
+import { getHealth } from '../api/charterApi';
 
-export default function SettingsPage({ activeRoute }) {
-  const [currency, setCurrency] = useState('INR');
-  const [demurrageRate, setDemurrageRate] = useState(5000);
-  const [bunkerFuelPrice, setBunkerFuelPrice] = useState(620);
-  const [modelEndpoint, setModelEndpoint] = useState('http://localhost:8000/api/v1/charter/recommend');
+export default function SettingsPage({ 
+  activeRoute, 
+  requestPayload = {}, 
+  updateRequest 
+}) {
+  const assumptions = requestPayload.assumptions || {
+    currency: 'INR',
+    usdToInr: 83.2,
+    demurrageUSDPerDay: 5000,
+    bunkerFuelPricePerMT: 620,
+  };
+
+  const [activeJsonTab, setActiveJsonTab] = useState('request'); // 'request' | 'response'
+  const [healthInfo, setHealthInfo] = useState(null);
+  const [healthStatus, setHealthStatus] = useState('idle'); // 'idle' | 'checking' | 'ok' | 'error'
   const [saved, setSaved] = useState(false);
-  const [tested, setTested] = useState(false);
 
-  const samplePayload = {
-    route_query: {
-      cargo_type: activeRoute.cargoType,
-      cargo_quantity_mt: activeRoute.cargoQuantityMT,
-      origin_port_code: activeRoute.portConstraints.loadingPort.unlocode,
-      destination_port_code: activeRoute.portConstraints.dischargePort.unlocode,
-      laycan_start: activeRoute.laycanStart,
-      laycan_end: activeRoute.laycanEnd,
-      target_arrival_date: activeRoute.desiredArrivalDate
-    },
-    market_context: {
-      bunker_vlsfo_usd_mt: bunkerFuelPrice,
-      demurrage_usd_day: demurrageRate,
-      fx_rate_usd_inr: 83.4
+  const handleAssumptionChange = (key, value) => {
+    if (updateRequest) {
+      updateRequest({
+        assumptions: {
+          ...assumptions,
+          [key]: value,
+        },
+      });
     }
   };
 
@@ -43,9 +56,16 @@ export default function SettingsPage({ activeRoute }) {
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const handleTestInference = () => {
-    setTested(true);
-    setTimeout(() => setTested(false), 1800);
+  const handleTestConnection = async () => {
+    setHealthStatus('checking');
+    try {
+      const data = await getHealth();
+      setHealthInfo(data);
+      setHealthStatus('ok');
+    } catch (err) {
+      setHealthInfo({ error: err.message });
+      setHealthStatus('error');
+    }
   };
 
   return (
@@ -54,145 +74,215 @@ export default function SettingsPage({ activeRoute }) {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#30454D]/60 pb-3">
         <div>
           <h2 className="text-xl font-hud font-bold text-white tracking-wide uppercase">
-            SYSTEM CONFIGURATION & ML MODEL INTEGRATION
+            SYSTEM CONFIGURATION & MODEL TELEMETRY
           </h2>
           <p className="text-xs text-[#82949A]">
-            Financial assumptions, default commercial thresholds, and future Python/FastAPI model ingestion endpoints.
+            Financial assumptions, commercial default thresholds, and live REST API contract inspection.
           </p>
         </div>
 
         <button
+          type="button"
           onClick={handleSave}
           className="flex items-center space-x-2 px-5 py-2 bg-[#F47B3A] hover:bg-[#FF9A5A] text-white text-xs font-hud font-bold uppercase rounded-lg shadow-md transition-all cursor-pointer"
         >
           {saved ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-          <span>{saved ? 'SETTINGS SAVED' : 'SAVE CONFIGURATION'}</span>
+          <span>{saved ? 'CONFIGURATION SAVED' : 'SAVE CONFIGURATION'}</span>
         </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column (7 cols): Operational & Commercial Parameters */}
-        <div className="lg:col-span-7 space-y-6">
-          {/* Commercial Assumptions */}
+        {/* Left Column (6 cols): Operational & Commercial Assumptions */}
+        <div className="lg:col-span-6 space-y-6">
+          {/* Commercial Assumptions Form */}
           <div className="card-shell p-6 space-y-4">
             <div className="flex items-center space-x-2.5 border-b border-[#30454D] pb-3">
               <Sliders className="w-4 h-4 text-[#F47B3A]" />
               <h3 className="font-hud font-bold text-xs uppercase tracking-wider text-[#DCE5E7]">
-                COMMERCIAL DEFAULT PARAMETERS
+                COMMERCIAL DEFAULT ASSUMPTIONS (REQUEST.ASSUMPTIONS)
               </h3>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Currency */}
               <div>
                 <label className="text-[10px] font-hud uppercase tracking-wider text-[#82949A] block mb-1">
-                  DEFAULT PRESENTATION CURRENCY
+                  PRESENTATION CURRENCY
                 </label>
                 <select
-                  value={currency}
-                  onChange={(e) => setCurrency(e.target.value)}
-                  className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none"
+                  value={assumptions.currency || 'INR'}
+                  onChange={(e) => handleAssumptionChange('currency', e.target.value)}
+                  className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none cursor-pointer"
                 >
-                  <option value="INR">₹ Indian Rupee (Crores)</option>
-                  <option value="USD">$ US Dollars (Millions)</option>
-                  <option value="EUR">€ Euros</option>
+                  <option value="INR">₹ Indian Rupee (INR Crores)</option>
+                  <option value="USD">$ US Dollars (USD Millions)</option>
                 </select>
               </div>
 
+              {/* FX Rate USD to INR */}
               <div>
                 <label className="text-[10px] font-hud uppercase tracking-wider text-[#82949A] block mb-1">
-                  DEFAULT DEMURRAGE RATE ($ / DAY)
+                  USD TO INR FX RATE (₹ / $)
                 </label>
                 <input
                   type="number"
-                  value={demurrageRate}
-                  onChange={(e) => setDemurrageRate(Number(e.target.value))}
-                  className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none"
+                  step="0.1"
+                  value={assumptions.usdToInr ?? 83.2}
+                  onChange={(e) => handleAssumptionChange('usdToInr', Number(e.target.value))}
+                  className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none font-bold"
                 />
               </div>
 
+              {/* Demurrage Rate */}
               <div>
                 <label className="text-[10px] font-hud uppercase tracking-wider text-[#82949A] block mb-1">
-                  VLSFO BUNKER FUEL INDEX ($ / MT)
+                  PORT DEMURRAGE RATE ($ / DAY)
                 </label>
                 <input
                   type="number"
-                  value={bunkerFuelPrice}
-                  onChange={(e) => setBunkerFuelPrice(Number(e.target.value))}
-                  className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none"
+                  step="500"
+                  value={assumptions.demurrageUSDPerDay ?? 5000}
+                  onChange={(e) => handleAssumptionChange('demurrageUSDPerDay', Number(e.target.value))}
+                  className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none font-bold"
                 />
               </div>
 
+              {/* Bunker Fuel Price */}
               <div>
                 <label className="text-[10px] font-hud uppercase tracking-wider text-[#82949A] block mb-1">
-                  MINIMUM CONFIDENCE THRESHOLD
+                  VLSFO BUNKER FUEL PRICE ($ / MT)
                 </label>
-                <div className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#4FA69A] flex items-center justify-between">
-                  <span>75% (Charter Committee Limit)</span>
-                  <span className="text-[10px] text-[#82949A]">ENFORCED</span>
-                </div>
+                <input
+                  type="number"
+                  step="10"
+                  value={assumptions.bunkerFuelPricePerMT ?? 620}
+                  onChange={(e) => handleAssumptionChange('bunkerFuelPricePerMT', Number(e.target.value))}
+                  className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none font-bold"
+                />
               </div>
             </div>
+
+            <p className="text-[11px] text-[#82949A] pt-2 border-t border-[#30454D]">
+              Note: Modifications directly propagate to live voyage voyage cost calculations via the 400ms debounced optimization pipeline.
+            </p>
           </div>
 
-          {/* Architecture Rationale for Model Replacement */}
-          <div className="card-shell p-6 space-y-3">
-            <div className="flex items-center space-x-2 text-xs font-hud font-bold text-[#4FA69A] uppercase tracking-wider">
-              <Database className="w-4 h-4" />
-              <span>FRONTEND-BACKEND INTEGRATION READINESS</span>
+          {/* Backend Connection & Data Provenance Card */}
+          <div className="card-shell p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-[#30454D] pb-3">
+              <div className="flex items-center space-x-2.5">
+                <Activity className="w-4 h-4 text-[#4FA69A]" />
+                <h3 className="font-hud font-bold text-xs uppercase tracking-wider text-[#DCE5E7]">
+                  FASTAPI BACKEND CONNECTION & DATA STATUS
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={handleTestConnection}
+                disabled={healthStatus === 'checking'}
+                className="px-3 py-1.5 bg-[#20343C] hover:bg-[#30454D] border border-[#30454D] rounded-lg text-xs font-mono text-[#DCE5E7] flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${healthStatus === 'checking' ? 'animate-spin text-[#4FA69A]' : ''}`} />
+                <span>{healthStatus === 'checking' ? 'TESTING...' : 'TEST CONNECTION'}</span>
+              </button>
             </div>
-            <p className="text-xs text-[#82949A] leading-relaxed">
-              Every card, chart, and KPI in Charter AI reads from a single structured mock object (<code className="text-[#DCE5E7]">mockData.js</code>). When the production ML pipeline (e.g., CatBoost/Prophet ensemble trained on Baltic fixtures and AIS satellite telemetry) is deployed, replacing <code className="text-[#DCE5E7]">mockData.js</code> with an API fetch call will populate the entire UI with zero layout modifications.
-            </p>
-            <div className="p-3 bg-[#0D1A20] rounded-lg border border-[#30454D] text-xs font-mono-num text-[#DCE5E7] flex items-center justify-between">
-              <span>ACTIVE DATA SCHEMA VERSION:</span>
-              <span className="text-[#F47B3A]">charter-ai-v2.4-schema.json</span>
-            </div>
+
+            {/* Health Info Block */}
+            {healthInfo ? (
+              <div className="space-y-3">
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="p-2.5 bg-[#0D1A20] border border-[#30454D] rounded-lg">
+                    <span className="text-[9px] font-hud uppercase tracking-wider text-[#82949A] block">ENDPOINT STATUS</span>
+                    <span className={`text-xs font-mono font-bold ${healthInfo.status === 'ok' ? 'text-[#4FA69A]' : 'text-[#D9573F]'}`}>
+                      {healthInfo.status === 'ok' ? '● ONLINE (200 OK)' : 'OFFLINE'}
+                    </span>
+                  </div>
+
+                  <div className="p-2.5 bg-[#0D1A20] border border-[#30454D] rounded-lg">
+                    <span className="text-[9px] font-hud uppercase tracking-wider text-[#82949A] block">DATA SOURCE MODE</span>
+                    <span className={`text-xs font-mono font-bold uppercase ${healthInfo.dataSource === 'synthetic' ? 'text-[#D9A441]' : 'text-[#4FA69A]'}`}>
+                      {healthInfo.dataSource || 'UNKNOWN'}
+                    </span>
+                  </div>
+
+                  <div className="p-2.5 bg-[#0D1A20] border border-[#30454D] rounded-lg">
+                    <span className="text-[9px] font-hud uppercase tracking-wider text-[#82949A] block">LATEST RATE DATE</span>
+                    <span className="text-xs font-mono font-bold text-[#DCE5E7]">
+                      {healthInfo.ratesLastDate || 'N/A'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Amber Warning if Synthetic */}
+                {healthInfo.dataSource === 'synthetic' && (
+                  <div className="bg-[#D9A441]/15 border border-[#D9A441]/40 p-3.5 rounded-lg flex items-start gap-2.5 text-xs text-[#D9A441] font-mono leading-relaxed">
+                    <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="block font-hud uppercase">SYNTHETIC DATA SOURCE ACTIVE</strong>
+                      <span>
+                        Freight rate trajectory is derived from a mean-reverting stochastic simulation (seed=42). 
+                        To calibrate on actual Baltic Panamax Index data, place <code>rates_raw.csv</code> into the backend directory.
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-xs text-[#82949A]">
+                Click <strong>TEST CONNECTION</strong> to ping the live backend health endpoint (<code>/health</code>) and verify data source provenance.
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Right Column (5 cols): ML Model Endpoint Simulation */}
-        <div className="lg:col-span-5 space-y-6">
+        {/* Right Column (6 cols): Live Request & Response JSON Inspector */}
+        <div className="lg:col-span-6 space-y-6">
           <div className="card-shell p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-[#30454D] pb-3">
               <div className="flex items-center space-x-2">
                 <Code className="w-4 h-4 text-[#F47B3A]" />
                 <h3 className="font-hud font-bold text-xs uppercase tracking-wider text-[#DCE5E7]">
-                  MODEL API ENDPOINT (SIMULATION)
+                  LIVE JSON CONTRACT TELEMETRY
                 </h3>
               </div>
-              <span className="text-[10px] font-mono-num text-[#4FA69A] bg-[#4FA69A]/10 border border-[#4FA69A]/30 px-1.5 py-0.5 rounded">
-                REST / FASTAPI
-              </span>
-            </div>
 
-            <div>
-              <label className="text-[10px] font-hud uppercase tracking-wider text-[#82949A] block mb-1">
-                INFERENCE SERVICE URL
-              </label>
-              <div className="flex space-x-2">
-                <input
-                  type="text"
-                  value={modelEndpoint}
-                  onChange={(e) => setModelEndpoint(e.target.value)}
-                  className="flex-1 bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none"
-                />
+              {/* JSON Switcher Tabs */}
+              <div className="flex items-center bg-[#0D1A20] border border-[#30454D] rounded-lg p-0.5 text-xs font-mono">
                 <button
-                  onClick={handleTestInference}
-                  className="px-3 py-2 bg-[#20343C] hover:bg-[#30454D] border border-[#30454D] rounded-lg text-xs font-mono-num text-[#DCE5E7] flex items-center space-x-1"
+                  type="button"
+                  onClick={() => setActiveJsonTab('request')}
+                  className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
+                    activeJsonTab === 'request'
+                      ? 'bg-[#F47B3A] text-white font-bold'
+                      : 'text-[#82949A] hover:text-[#DCE5E7]'
+                  }`}
                 >
-                  <RefreshCw className={`w-3.5 h-3.5 ${tested ? 'animate-spin text-[#4FA69A]' : ''}`} />
-                  <span>{tested ? 'TESTING...' : 'PING'}</span>
+                  REQUEST JSON
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveJsonTab('response')}
+                  className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
+                    activeJsonTab === 'response'
+                      ? 'bg-[#4FA69A] text-white font-bold'
+                      : 'text-[#82949A] hover:text-[#DCE5E7]'
+                  }`}
+                >
+                  RESPONSE JSON
                 </button>
               </div>
             </div>
 
             <div>
-              <div className="flex items-center justify-between text-[10px] font-hud uppercase tracking-wider text-[#82949A] mb-1">
-                <span>INFERENCE QUERY PAYLOAD PREVIEW</span>
-                <span className="font-mono-num text-[#4FA69A]">JSON READY</span>
+              <div className="flex items-center justify-between text-[10px] font-hud uppercase tracking-wider text-[#82949A] mb-1.5">
+                <span>
+                  {activeJsonTab === 'request' ? 'POST /api/v1/charter/recommend PAYLOAD' : 'RECOMMENDATION RESPONSE SCHEMA (LIVE)'}
+                </span>
+                <span className="font-mono text-[#4FA69A]">CONTRACT CONFORMANT</span>
               </div>
-              <pre className="p-3 bg-[#071014] border border-[#30454D] rounded-lg text-[10px] font-mono-num text-[#DCE5E7] overflow-x-auto max-h-56 leading-relaxed select-all">
-                {JSON.stringify(samplePayload, null, 2)}
+
+              <pre className="p-3 bg-[#071014] border border-[#30454D] rounded-lg text-[10px] font-mono-num text-[#DCE5E7] overflow-x-auto max-h-[420px] leading-relaxed select-all">
+                {JSON.stringify(activeJsonTab === 'request' ? requestPayload : activeRoute, null, 2)}
               </pre>
             </div>
           </div>

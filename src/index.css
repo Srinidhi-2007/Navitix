@@ -108,3 +108,28 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #F47B3A;
 }
+
+/* Leaflet Dark Theme Tiles & Custom HUD Popups */
+.dark-map-tiles {
+  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.35) !important;
+}
+
+.leaflet-container {
+  background-color: #071014 !important;
+  font-family: inherit;
+}
+
+.custom-hud-popup .leaflet-popup-content-wrapper {
+  background: rgba(13, 26, 32, 0.96) !important;
+  color: #DCE5E7 !important;
+  border: 1px solid #30454D !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+.custom-hud-popup .leaflet-popup-tip {
+  background: rgba(13, 26, 32, 0.96) !important;
+  border: 1px solid #30454D !important;
+}
+

@@ -11,17 +11,35 @@ import RiskConfidencePage from './pages/RiskConfidencePage';
 import CompareVesselsPage from './pages/CompareVesselsPage';
 import SettingsPage from './pages/SettingsPage';
 
-import { ROUTE_PRESETS, getRouteData, DEFAULT_ROUTE_ID } from './data/mockData';
+import { useRecommendation } from './hooks/useRecommendation';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('overview');
-  const [activeRouteId, setActiveRouteId] = useState(DEFAULT_ROUTE_ID);
   const [isCharterModalOpen, setIsCharterModalOpen] = useState(false);
 
-  const activeRoute = getRouteData(activeRouteId);
+  const {
+    activeRoute,
+    activeRouteId,
+    requestPayload,
+    status,
+    errorMessage,
+    validationWarning,
+    isLoading,
+    isLive,
+    isFallback,
+    isError,
+    loadingPorts,
+    dischargePorts,
+    routesList,
+    routePresets,
+    selectRoute,
+    updateRequest,
+    applyScenario,
+    refetch,
+  } = useRecommendation();
 
   const handleSelectRoute = (routeId) => {
-    setActiveRouteId(routeId);
+    selectRoute(routeId);
   };
 
   const renderActivePage = () => {
@@ -39,7 +57,14 @@ export default function App() {
           <VesselRoutePage
             activeRoute={activeRoute}
             onSelectRoute={handleSelectRoute}
-            routePresets={ROUTE_PRESETS}
+            routePresets={routePresets}
+            requestPayload={requestPayload}
+            updateRequest={updateRequest}
+            applyScenario={applyScenario}
+            loadingPorts={loadingPorts}
+            dischargePorts={dischargePorts}
+            routesList={routesList}
+            validationWarning={validationWarning}
           />
         );
       case 'freight-forecast':
@@ -74,6 +99,8 @@ export default function App() {
         return (
           <SettingsPage
             activeRoute={activeRoute}
+            requestPayload={requestPayload}
+            updateRequest={updateRequest}
           />
         );
       default:
@@ -98,12 +125,65 @@ export default function App() {
 
       {/* 2. Main Content Canvas */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto hud-grid-bg">
+        {/* Backend Model Connection Status Strip */}
+        <div className="w-full shrink-0">
+          {isLoading && (
+            <div className="bg-[#F47B3A]/10 border-b border-[#F47B3A]/30 px-6 py-1.5 text-xs text-[#F47B3A] flex items-center justify-between font-mono">
+              <span className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#F47B3A] animate-ping"></span>
+                <span>COMPUTING VOYAGE DECISION MODEL...</span>
+              </span>
+              <span className="opacity-75">400ms debounce active</span>
+            </div>
+          )}
+
+          {!isLoading && isLive && (
+            <div className="bg-[#4FA69A]/10 border-b border-[#4FA69A]/30 px-6 py-1 text-xs text-[#4FA69A] flex items-center justify-between font-mono">
+              <span className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#4FA69A] animate-pulse"></span>
+                <span>LIVE MODEL ACTIVE &middot; {activeRoute?.riskAndConfidence?.modelTelemetry?.modelVersion || 'FastAPI Pipeline'}</span>
+              </span>
+              <span className="opacity-80 text-[11px]">Latency: {activeRoute?.riskAndConfidence?.modelTelemetry?.inferenceLatencyMs || 0}ms</span>
+            </div>
+          )}
+
+          {!isLoading && isFallback && (
+            <div className="bg-[#D9A441]/10 border-b border-[#D9A441]/30 px-6 py-1 text-xs text-[#D9A441] flex items-center justify-between font-mono">
+              <span className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#D9A441]"></span>
+                <span>DEMO DATA MODE &middot; Backend offline (displaying mock fixture preset)</span>
+              </span>
+              <button
+                onClick={refetch}
+                className="underline hover:text-white transition-colors cursor-pointer text-[11px]"
+              >
+                Retry Live Connection
+              </button>
+            </div>
+          )}
+
+          {!isLoading && isError && (
+            <div className="bg-[#D9573F]/10 border-b border-[#D9573F]/30 px-6 py-1 text-xs text-[#D9573F] flex items-center justify-between font-mono">
+              <span className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#D9573F]"></span>
+                <span>API ERROR: {errorMessage} (retained previous evaluation)</span>
+              </span>
+              <button
+                onClick={refetch}
+                className="underline hover:text-white transition-colors cursor-pointer text-[11px]"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* Sticky Header Topbar with Live UTC Clock */}
         <Header
           activeTab={activeTab}
           activeRoute={activeRoute}
           onSelectRoute={handleSelectRoute}
-          routePresets={ROUTE_PRESETS}
+          routePresets={routePresets}
         />
 
         {/* Page Content Container */}

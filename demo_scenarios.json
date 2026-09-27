@@ -1,0 +1,119 @@
+{
+  "_meta": {
+    "name": "Charter AI Demo Scenarios",
+    "version": "0.1-prototype",
+    "description": "Pre-configured voyage payloads for decision-support evaluation and stress-testing",
+    "dataProvenance": {
+      "paradipBathymetry": "REAL (Indian Major Port Berth Specifications)",
+      "baseRatesAndVessels": "ASSUMPTION / INDICATIVE (Benchmark Market Multipliers)",
+      "forecastTrajectory": "SYNTHETIC (Mean-reverting stochastic simulation seed=42)"
+    }
+  },
+  "scenarios": [
+    {
+      "id": "aus-paradip-coking-coal",
+      "name": "Scenario 1: Primary SIH Benchmark (Hay Point → Paradip)",
+      "description": "50,000 MT Coking Coal from DBCT Australia to Paradip Port, India. Validates 14.5m discharge draft envelope and selects optimal Panamax charter.",
+      "request": {
+        "cargoType": "Coking Coal",
+        "cargoQuantityMT": 50000,
+        "originPortId": "hay-point",
+        "destinationPortId": "paradip",
+        "laycanStart": "2026-09-12",
+        "laycanEnd": "2026-09-16",
+        "desiredArrivalDate": "2026-09-28",
+        "allowSplit": true,
+        "assumptions": {
+          "currency": "INR",
+          "usdToInr": 83.2,
+          "demurrageUSDPerDay": 5000,
+          "bunkerFuelPricePerMT": 620
+        }
+      },
+      "expectedOutcome": {
+        "recommendedVessel": "Panamax",
+        "isFeasible": true,
+        "capesizeFeasible": false,
+        "primaryConstraint": "Paradip max draft 14.5m vs Capesize 18.2m"
+      }
+    },
+    {
+      "id": "aus-qingdao-iron-ore",
+      "name": "Scenario 2: Deep-Draft Ore Run (Port Hedland → Qingdao)",
+      "description": "70,000 MT Iron Ore Fines from Western Australia to Qingdao, China. Evaluates high-throughput deep-water discharge facilities.",
+      "request": {
+        "cargoType": "Iron Ore Fines",
+        "cargoQuantityMT": 70000,
+        "originPortId": "port-hedland",
+        "destinationPortId": "qingdao",
+        "laycanStart": "2026-09-15",
+        "laycanEnd": "2026-09-20",
+        "desiredArrivalDate": "2026-10-02",
+        "allowSplit": true,
+        "assumptions": {
+          "currency": "USD",
+          "usdToInr": 83.2,
+          "demurrageUSDPerDay": 5000,
+          "bunkerFuelPricePerMT": 620
+        }
+      },
+      "expectedOutcome": {
+        "recommendedVessel": "Panamax",
+        "isFeasible": true,
+        "capesizeFeasible": true
+      }
+    },
+    {
+      "id": "brazil-alexandria-soybeans",
+      "name": "Scenario 3: Agri-Bulk Mid-Parcel (Santos → Alexandria)",
+      "description": "38,000 MT Soybeans in Bulk from Santos, Brazil to Alexandria, Egypt. Medium-parcel transatlantic delivery suited for Supramax gear.",
+      "request": {
+        "cargoType": "Soybeans in Bulk",
+        "cargoQuantityMT": 38000,
+        "originPortId": "santos",
+        "destinationPortId": "alexandria",
+        "laycanStart": "2026-09-18",
+        "laycanEnd": "2026-09-24",
+        "desiredArrivalDate": "2026-10-12",
+        "allowSplit": true,
+        "assumptions": {
+          "currency": "USD",
+          "usdToInr": 83.2,
+          "demurrageUSDPerDay": 5000,
+          "bunkerFuelPricePerMT": 620
+        }
+      },
+      "expectedOutcome": {
+        "recommendedVessel": "Supramax",
+        "isFeasible": true
+      }
+    },
+    {
+      "id": "aus-paradip-150k-stress",
+      "name": "Scenario 4: 150,000 MT Mega-Parcel Stress Case (Hay Point → Paradip)",
+      "description": "Stress-testing a 150,000 MT parcel into Paradip's 14.5m draft restricted port. Direct Capesize is excluded by draft limits; system triggers 2x Panamax multi-voyage split evaluation.",
+      "request": {
+        "cargoType": "Coking Coal",
+        "cargoQuantityMT": 150000,
+        "originPortId": "hay-point",
+        "destinationPortId": "paradip",
+        "laycanStart": "2026-09-12",
+        "laycanEnd": "2026-09-16",
+        "desiredArrivalDate": "2026-09-28",
+        "allowSplit": true,
+        "assumptions": {
+          "currency": "INR",
+          "usdToInr": 83.2,
+          "demurrageUSDPerDay": 5000,
+          "bunkerFuelPricePerMT": 620
+        }
+      },
+      "expectedOutcome": {
+        "recommendedVessel": "Panamax (2x Voyages)",
+        "isFeasible": true,
+        "capesizeFeasible": false,
+        "handling": "Multi-voyage parcel split"
+      }
+    }
+  ]
+}

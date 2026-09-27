@@ -27,8 +27,10 @@ export default function FreightForecastPage({ activeRoute, onOpenCharterModal })
   const paddingX = 45;
   const paddingY = 35;
 
-  const minRate = 25.5;
-  const maxRate = 33.5;
+  // Auto-scale chart Y axis from actual data (pad 1.5 on each side)
+  const allRates = points.flatMap(p => [p.actualRate, p.forecastRate, p.lowerBand, p.upperBand].filter(v => v !== null));
+  const minRate = allRates.length > 0 ? Math.floor(Math.min(...allRates) - 1.5) : 25;
+  const maxRate = allRates.length > 0 ? Math.ceil(Math.max(...allRates) + 1.5) : 34;
   const rateRange = maxRate - minRate;
 
   const getX = (idx) => paddingX + (idx / (points.length - 1)) * (chartWidth - 2 * paddingX);
@@ -46,9 +48,12 @@ export default function FreightForecastPage({ activeRoute, onOpenCharterModal })
     .map((p, i) => `${i === 0 ? 'M' : 'L'} ${getX(points.indexOf(p))},${getY(p.forecastRate)}`)
     .join(' ');
 
+  // BPI benchmark: normalize raw index values (≈1400) to $/MT scale using BPI_TO_USD_PER_MT≈0.019
+  // The backend sends raw BPI index; divide by 52.65 to approximate $/MT for chart rendering.
+  const BPI_DIVISOR = 52.65;
   const benchmarkPath = points
-    .filter(p => p.benchmarkBPI !== undefined)
-    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${getX(points.indexOf(p))},${getY(p.benchmarkBPI)}`)
+    .filter(p => p.benchmarkBPI !== undefined && p.benchmarkBPI !== null)
+    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${getX(points.indexOf(p))},${getY(p.benchmarkBPI / BPI_DIVISOR)}`)
     .join(' ');
 
   // Prediction interval polygon
@@ -181,8 +186,8 @@ export default function FreightForecastPage({ activeRoute, onOpenCharterModal })
               </linearGradient>
             </defs>
 
-            {/* Horizontal Grid lines */}
-            {[26, 28, 30, 32].map((val) => {
+            {/* Horizontal Grid lines — auto-scaled to match actual rate data */}
+            {Array.from({ length: 5 }, (_, i) => Math.round(minRate + (i / 4) * (maxRate - minRate))).map((val) => {
               const y = getY(val);
               return (
                 <g key={val}>
@@ -435,18 +440,18 @@ export default function FreightForecastPage({ activeRoute, onOpenCharterModal })
           <div className="p-4 bg-[#0D1A20] border border-[#F47B3A]/40 rounded-lg bg-[#F47B3A]/5">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-hud uppercase tracking-wider text-[#F47B3A] font-bold">
-                FORECAST IN 4–5 DAYS (OPTIMAL TROUGH)
+                FORECAST TROUGH (DAY +{freightForecast.troughDayOffset})
               </span>
               <span className="text-[9px] font-mono-num bg-[#F47B3A]/20 text-[#F47B3A] px-1.5 py-0.5 rounded">
                 KEY DECISION
               </span>
             </div>
             <div className="text-2xl font-mono-num font-bold text-[#F47B3A] mt-1">
-              ${freightForecast.forecastRateIn7Days.toFixed(2)}
+              ${freightForecast.troughRate?.toFixed(2) ?? freightForecast.forecastRateIn7Days?.toFixed(2)}
               <span className="text-xs font-normal text-[#82949A]"> /MT</span>
             </div>
             <p className="text-[11px] text-[#82949A] mt-1">
-              Projected bottoming-out prior to late-month freight surge
+              Projected trough · Charter in {freightForecast.optimalWindowDateRange}
             </p>
           </div>
 

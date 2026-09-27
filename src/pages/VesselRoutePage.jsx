@@ -1,28 +1,48 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   Ship, 
-  MapPin, 
-  Calendar, 
+  Sliders, 
   CheckCircle2, 
   XCircle, 
-  Sliders, 
-  Anchor, 
-  Info,
-  AlertTriangle,
-  ArrowRight,
-  BarChart3
+  AlertTriangle, 
+  BarChart3, 
+  Sparkles, 
+  SplitSquareVertical, 
+  Navigation 
 } from 'lucide-react';
+import RouteMap from '../components/RouteMap';
 
-export default function VesselRoutePage({ activeRoute, onSelectRoute, routePresets }) {
-  const [cargoQty, setCargoQty] = useState(activeRoute.cargoQuantityMT);
-  const [cargoType, setCargoType] = useState(activeRoute.cargoType);
-  const [laycanDate, setLaycanDate] = useState(activeRoute.laycanStart);
-  const [arrivalDate, setArrivalDate] = useState(activeRoute.desiredArrivalDate);
-  const [loadWindow, setLoadWindow] = useState(activeRoute.loadingWindow);
-  const [dischWindow, setDischWindow] = useState(activeRoute.dischargeWindow);
+export default function VesselRoutePage({ 
+  activeRoute, 
+  onSelectRoute, 
+  routePresets = [],
+  requestPayload = {},
+  updateRequest,
+  applyScenario,
+  loadingPorts = [],
+  dischargePorts = [],
+  routesList = [],
+  validationWarning = null
+}) {
+  const cargoType = requestPayload.cargoType ?? activeRoute.cargoType ?? 'Coking Coal';
+  const cargoQty = requestPayload.cargoQuantityMT ?? activeRoute.cargoQuantityMT ?? 50000;
+  const originPortId = requestPayload.originPortId ?? activeRoute.portConstraints?.loadingPort?.id ?? 'hay-point';
+  const destPortId = requestPayload.destinationPortId ?? activeRoute.portConstraints?.dischargePort?.id ?? 'paradip';
+  const laycanStart = requestPayload.laycanStart ?? activeRoute.laycanStart ?? '2026-09-12';
+  const laycanEnd = requestPayload.laycanEnd ?? activeRoute.laycanEnd ?? '2026-09-16';
+  const arrivalDate = requestPayload.desiredArrivalDate ?? activeRoute.desiredArrivalDate ?? '2026-09-28';
+  const allowSplit = requestPayload.allowSplit ?? true;
 
-  const { portConstraints, candidateVessels } = activeRoute;
-  const { loadingPort, dischargePort, draftComparisonChart } = portConstraints;
+  const { portConstraints, candidateVessels = [] } = activeRoute;
+  const loadingPort = portConstraints?.loadingPort || {};
+  const dischargePort = portConstraints?.dischargePort || {};
+  const draftComparisonChart = portConstraints?.draftComparisonChart || [];
+
+  const handleFieldChange = (field, value) => {
+    if (updateRequest) {
+      updateRequest(field, value);
+    }
+  };
 
   return (
     <div className="space-y-6 pb-12">
@@ -33,17 +53,68 @@ export default function VesselRoutePage({ activeRoute, onSelectRoute, routePrese
             VESSEL & ROUTE + PORT CONSTRAINTS
           </h2>
           <p className="text-xs text-[#82949A]">
-            Define voyage parameters, evaluate port draft envelopes, and inspect candidate fleet physical feasibility.
+            Define voyage parameters, evaluate port bathymetric envelopes, and inspect candidate fleet physical feasibility.
           </p>
         </div>
 
         <div className="flex items-center space-x-2 text-xs font-mono-num bg-[#16262D] border border-[#30454D] px-3 py-1.5 rounded-lg">
           <span className="text-[#82949A]">DISCHARGE CONSTRAINT:</span>
-          <span className="text-[#D9A441] font-bold">14.5m MAX DRAFT</span>
+          <span className="text-[#D9A441] font-bold">{dischargePort.maxDraftMeters || 14.5}m MAX DRAFT</span>
         </div>
       </div>
 
-      {/* 1. Input Section (Top Interactive Voyage Controls) */}
+      {/* Origin == Destination Validation Guard */}
+      {validationWarning && (
+        <div className="bg-[#D9573F]/15 border border-[#D9573F]/40 p-4 rounded-xl flex items-center gap-3 text-xs text-[#D9573F] font-mono">
+          <AlertTriangle className="w-5 h-5 shrink-0" />
+          <span>{validationWarning}</span>
+        </div>
+      )}
+
+      {/* 3 Quick Scenario Buttons from getRoutes() */}
+      <div className="card-shell p-4 bg-[#0D1A20] border-[#30454D] space-y-2.5">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-hud uppercase tracking-wider text-[#82949A] flex items-center gap-1.5 font-bold">
+            <Sparkles className="w-3.5 h-3.5 text-[#F47B3A]" />
+            <span>QUICK SCENARIOS (ROUTES.JSON BENCHMARKS)</span>
+          </span>
+          <span className="text-[10px] font-mono text-[#82949A]">Click to auto-populate voyage query</span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          {routesList.slice(0, 3).map((route) => {
+            const isSelected = originPortId === route.originPortId && destPortId === route.destinationPortId;
+            return (
+              <button
+                key={route.id}
+                type="button"
+                onClick={() => applyScenario ? applyScenario(route) : onSelectRoute?.(route.id)}
+                className={`p-3 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                  isSelected
+                    ? 'bg-[#F47B3A]/10 border-[#F47B3A] text-white'
+                    : 'bg-[#16262D] border-[#30454D] hover:border-[#4FA69A] text-[#DCE5E7]'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-hud font-bold text-white uppercase tracking-wider">
+                    {route.originPortId} &rarr; {route.destinationPortId}
+                  </span>
+                  {isSelected && (
+                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-[#F47B3A] text-black">
+                      ACTIVE
+                    </span>
+                  )}
+                </div>
+                <div className="text-[11px] font-mono text-[#82949A]">
+                  {(route.defaultCargoMT || 50000).toLocaleString()} MT &middot; {route.defaultCargoType || 'Bulk Cargo'}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 1. Input Section (Interactive Voyage Controls) */}
       <div className="card-shell p-6 space-y-4">
         <div className="flex items-center justify-between border-b border-[#30454D] pb-3">
           <div className="flex items-center space-x-2.5">
@@ -55,15 +126,15 @@ export default function VesselRoutePage({ activeRoute, onSelectRoute, routePrese
 
           {/* Quick Route Preset Dropdown */}
           <div className="flex items-center space-x-2">
-            <span className="text-[11px] font-mono-num text-[#82949A] hidden sm:inline">PRESET ROUTE:</span>
+            <span className="text-[11px] font-mono-num text-[#82949A] hidden sm:inline">PRESET:</span>
             <select
               value={activeRoute.id}
-              onChange={(e) => onSelectRoute(e.target.value)}
-              className="bg-[#0D1A20] border border-[#30454D] text-[#DCE5E7] text-xs rounded-lg px-2.5 py-1 focus:border-[#F47B3A] focus:outline-none"
+              onChange={(e) => onSelectRoute?.(e.target.value)}
+              className="bg-[#0D1A20] border border-[#30454D] text-[#DCE5E7] text-xs rounded-lg px-2.5 py-1 focus:border-[#F47B3A] focus:outline-none cursor-pointer"
             >
               {routePresets.map(p => (
                 <option key={p.id} value={p.id}>
-                  {p.label}
+                  {p.label || `${p.originPort} → ${p.destinationPort}`}
                 </option>
               ))}
             </select>
@@ -71,7 +142,7 @@ export default function VesselRoutePage({ activeRoute, onSelectRoute, routePrese
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Cargo Type */}
+          {/* Cargo Commodity */}
           <div>
             <label className="text-[10px] font-hud uppercase tracking-wider text-[#82949A] block mb-1">
               CARGO COMMODITY
@@ -79,59 +150,86 @@ export default function VesselRoutePage({ activeRoute, onSelectRoute, routePrese
             <input
               type="text"
               value={cargoType}
-              onChange={(e) => setCargoType(e.target.value)}
+              onChange={(e) => handleFieldChange('cargoType', e.target.value)}
               className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none"
             />
           </div>
 
-          {/* Cargo Quantity */}
+          {/* Cargo Quantity (MT) */}
           <div>
             <label className="text-[10px] font-hud uppercase tracking-wider text-[#82949A] block mb-1">
               CARGO QUANTITY (MT)
             </label>
             <input
               type="number"
+              min="1000"
+              step="5000"
               value={cargoQty}
-              onChange={(e) => setCargoQty(Number(e.target.value))}
-              className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none"
+              onChange={(e) => handleFieldChange('cargoQuantityMT', Math.max(1, Number(e.target.value)))}
+              className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none font-bold"
             />
           </div>
 
-          {/* Origin Port */}
+          {/* Origin / Loading Port Dropdown from getPorts() */}
           <div>
             <label className="text-[10px] font-hud uppercase tracking-wider text-[#82949A] block mb-1">
               ORIGIN / LOADING PORT
             </label>
-            <div className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] flex items-center justify-between">
-              <span>{activeRoute.originPort}</span>
-              <span className="text-base">{activeRoute.originFlag}</span>
-            </div>
+            <select
+              value={originPortId}
+              onChange={(e) => handleFieldChange('originPortId', e.target.value)}
+              className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none cursor-pointer"
+            >
+              {loadingPorts.map((port) => (
+                <option key={port.id} value={port.id} className="bg-[#16262D] text-[#DCE5E7]">
+                  {port.name} ({port.country})
+                </option>
+              ))}
+            </select>
           </div>
 
-          {/* Destination Port */}
+          {/* Destination / Discharge Port Dropdown from getPorts() */}
           <div>
             <label className="text-[10px] font-hud uppercase tracking-wider text-[#82949A] block mb-1">
               DESTINATION / DISCHARGE PORT
             </label>
-            <div className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] flex items-center justify-between">
-              <span>{activeRoute.destinationPort}</span>
-              <span className="text-base">{activeRoute.destinationFlag}</span>
-            </div>
+            <select
+              value={destPortId}
+              onChange={(e) => handleFieldChange('destinationPortId', e.target.value)}
+              className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none cursor-pointer"
+            >
+              {dischargePorts.map((port) => (
+                <option key={port.id} value={port.id} className="bg-[#16262D] text-[#DCE5E7]">
+                  {port.name} ({port.country})
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Laycan Window Start */}
           <div>
             <label className="text-[10px] font-hud uppercase tracking-wider text-[#82949A] block mb-1">
-              DESIRED LAYCAN COMMENCE
+              LAYCAN START DATE
             </label>
-            <div className="relative">
-              <input
-                type="date"
-                value={laycanDate}
-                onChange={(e) => setLaycanDate(e.target.value)}
-                className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none"
-              />
-            </div>
+            <input
+              type="date"
+              value={laycanStart}
+              onChange={(e) => handleFieldChange('laycanStart', e.target.value)}
+              className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none"
+            />
+          </div>
+
+          {/* Laycan Window End */}
+          <div>
+            <label className="text-[10px] font-hud uppercase tracking-wider text-[#82949A] block mb-1">
+              LAYCAN END DATE
+            </label>
+            <input
+              type="date"
+              value={laycanEnd}
+              onChange={(e) => handleFieldChange('laycanEnd', e.target.value)}
+              className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none"
+            />
           </div>
 
           {/* Desired Arrival Date */}
@@ -139,51 +237,51 @@ export default function VesselRoutePage({ activeRoute, onSelectRoute, routePrese
             <label className="text-[10px] font-hud uppercase tracking-wider text-[#82949A] block mb-1">
               DESIRED ARRIVAL DATE
             </label>
-            <div className="relative">
-              <input
-                type="date"
-                value={arrivalDate}
-                onChange={(e) => setArrivalDate(e.target.value)}
-                className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none"
-              />
-            </div>
-          </div>
-
-          {/* Loading Window */}
-          <div>
-            <label className="text-[10px] font-hud uppercase tracking-wider text-[#82949A] block mb-1">
-              LOADING LAYTIME ALLOWANCE
-            </label>
             <input
-              type="text"
-              value={loadWindow}
-              onChange={(e) => setLoadWindow(e.target.value)}
+              type="date"
+              value={arrivalDate}
+              onChange={(e) => handleFieldChange('desiredArrivalDate', e.target.value)}
               className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none"
             />
           </div>
 
-          {/* Discharge Window */}
-          <div>
+          {/* Allow Split Parcel Toggle */}
+          <div className="flex flex-col justify-end">
             <label className="text-[10px] font-hud uppercase tracking-wider text-[#82949A] block mb-1">
-              DISCHARGE LAYTIME ALLOWANCE
+              PARCEL SPLIT LOGIC
             </label>
-            <input
-              type="text"
-              value={dischWindow}
-              onChange={(e) => setDischWindow(e.target.value)}
-              className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none"
-            />
+            <button
+              type="button"
+              onClick={() => handleFieldChange('allowSplit', !allowSplit)}
+              className={`w-full rounded-lg px-3 py-2 text-xs font-mono-num border flex items-center justify-between transition-colors ${
+                allowSplit 
+                  ? 'bg-[#4FA69A]/15 border-[#4FA69A] text-[#4FA69A]' 
+                  : 'bg-[#0D1A20] border-[#30454D] text-[#82949A]'
+              }`}
+            >
+              <span className="flex items-center gap-1.5">
+                <SplitSquareVertical className="w-3.5 h-3.5" />
+                <span>ALLOW MULTI-VOYAGE</span>
+              </span>
+              <span className="font-bold">{allowSplit ? 'ON' : 'OFF'}</span>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* 2. Feasible Vessel Types Grid (✓ or ✗ with one-line reason) */}
+      {/* Geodetic Voyage Track & Port Bathymetry Map (Leaflet) */}
+      <RouteMap 
+        activeRoute={activeRoute} 
+        portsList={loadingPorts.concat(dischargePorts)} 
+      />
+
+      {/* 2. Feasible Vessel Types Grid (Live Model Evaluated) */}
       <div className="card-shell p-6 space-y-4">
         <div className="flex items-center justify-between border-b border-[#30454D] pb-3">
           <div className="flex items-center space-x-2.5">
             <Ship className="w-4 h-4 text-[#4FA69A]" />
             <h3 className="font-hud font-bold text-xs uppercase tracking-wider text-[#DCE5E7]">
-              FEASIBLE VESSEL CANDIDATES (PORT & LOT MATCHING)
+              FEASIBLE VESSEL CANDIDATES (LIVE EVALUATION FOR {cargoQty.toLocaleString()} MT)
             </h3>
           </div>
           <span className="text-[11px] font-mono-num text-[#82949A]">
@@ -211,7 +309,11 @@ export default function VesselRoutePage({ activeRoute, onSelectRoute, routePrese
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-2xl">🚢</span>
                     <div className="flex items-center space-x-1.5">
-                      {isFeas ? (
+                      {isRec ? (
+                        <span className="text-xs font-mono-num font-bold text-[#F47B3A] bg-[#F47B3A]/15 border border-[#F47B3A]/40 px-2 py-0.5 rounded">
+                          RECOMMENDED
+                        </span>
+                      ) : isFeas ? (
                         <span className="flex items-center space-x-1 text-xs font-mono-num font-bold text-[#4FA69A] bg-[#4FA69A]/10 border border-[#4FA69A]/30 px-2 py-0.5 rounded">
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           <span>FEASIBLE</span>
@@ -229,19 +331,21 @@ export default function VesselRoutePage({ activeRoute, onSelectRoute, routePrese
                     {vessel.name}
                   </div>
                   <div className="text-[11px] font-mono-num text-[#82949A] mt-0.5">
-                    Capacity: {vessel.capacityMT.toLocaleString()} MT · DWT {vessel.dwt ? vessel.dwt.toLocaleString() : 'N/A'}
+                    Capacity: {vessel.capacityMT.toLocaleString()} MT &middot; {vessel.voyageCount ? `${vessel.voyageCount} Voyage(s)` : `DWT ${vessel.dwt?.toLocaleString() || 'N/A'}`}
                   </div>
 
                   <div className="mt-3 pt-2.5 border-t border-[#30454D] grid grid-cols-2 gap-2 text-[11px] font-mono-num">
                     <div>
                       <span className="text-[#82949A] block text-[9px] uppercase font-hud">DRAFT</span>
-                      <span className={vessel.draftMeters > 14.5 ? 'text-[#D9573F] font-bold' : 'text-[#DCE5E7]'}>
+                      <span className={vessel.draftMeters > (dischargePort.maxDraftMeters || 14.5) ? 'text-[#D9573F] font-bold' : 'text-[#DCE5E7]'}>
                         {vessel.draftMeters} m
                       </span>
                     </div>
                     <div>
-                      <span className="text-[#82949A] block text-[9px] uppercase font-hud">LOA / BEAM</span>
-                      <span className="text-[#DCE5E7]">{vessel.loaMeters}m / {vessel.beamMeters}m</span>
+                      <span className="text-[#82949A] block text-[9px] uppercase font-hud">TOTAL COST</span>
+                      <span className="text-white font-bold">
+                        {vessel.costBreakdownCr ? `₹${vessel.costBreakdownCr.total.toFixed(2)} Cr` : 'N/A'}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -259,7 +363,7 @@ export default function VesselRoutePage({ activeRoute, onSelectRoute, routePrese
         </div>
       </div>
 
-      {/* 3. Port Constraints (Side by Side Loading and Discharge Port Cards) */}
+      {/* 3. Port Constraints (Loading and Discharge Port Cards) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Loading Port Card */}
         <div className="card-shell p-6 space-y-4">
@@ -269,11 +373,11 @@ export default function VesselRoutePage({ activeRoute, onSelectRoute, routePrese
                 ORIGIN HARBOUR SPECIFICATIONS
               </span>
               <h3 className="font-hud font-bold text-base text-white tracking-wide uppercase flex items-center space-x-2 mt-0.5">
-                <span>{loadingPort.flag}</span>
-                <span>{loadingPort.name}</span>
+                <span>{loadingPort.flag || '🇦🇺'}</span>
+                <span>{loadingPort.name || activeRoute.originPort}</span>
               </h3>
               <p className="text-[11px] font-mono-num text-[#82949A]">
-                UN/LOCODE: {loadingPort.unlocode || 'N/A'} · Coordinates: {loadingPort.coordinates || 'N/A'}
+                UN/LOCODE: {loadingPort.unlocode || 'N/A'} &middot; Coordinates: {loadingPort.coordinates || 'N/A'}
               </p>
             </div>
             <span className="text-xs font-mono-num bg-[#0D1A20] border border-[#30454D] px-2.5 py-1 rounded text-[#82949A]">
@@ -284,19 +388,19 @@ export default function VesselRoutePage({ activeRoute, onSelectRoute, routePrese
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="p-2.5 bg-[#0D1A20] border border-[#30454D] rounded-lg">
               <span className="text-[9px] font-hud uppercase tracking-wider text-[#82949A] block">MAX DRAFT</span>
-              <span className="text-base font-mono-num font-bold text-[#4FA69A]">{loadingPort.maxDraftMeters} m</span>
+              <span className="text-base font-mono-num font-bold text-[#4FA69A]">{loadingPort.maxDraftMeters || 19.5} m</span>
             </div>
             <div className="p-2.5 bg-[#0D1A20] border border-[#30454D] rounded-lg">
               <span className="text-[9px] font-hud uppercase tracking-wider text-[#82949A] block">BERTH LENGTH</span>
-              <span className="text-base font-mono-num font-bold text-[#DCE5E7]">{loadingPort.berthLengthMeters} m</span>
+              <span className="text-base font-mono-num font-bold text-[#DCE5E7]">{loadingPort.berthLengthMeters || 350} m</span>
             </div>
             <div className="p-2.5 bg-[#0D1A20] border border-[#30454D] rounded-lg">
               <span className="text-[9px] font-hud uppercase tracking-wider text-[#82949A] block">MAX LOA</span>
-              <span className="text-base font-mono-num font-bold text-[#DCE5E7]">{loadingPort.maxLoaMeters} m</span>
+              <span className="text-base font-mono-num font-bold text-[#DCE5E7]">{loadingPort.maxLoaMeters || 300} m</span>
             </div>
             <div className="p-2.5 bg-[#0D1A20] border border-[#30454D] rounded-lg">
               <span className="text-[9px] font-hud uppercase tracking-wider text-[#82949A] block">LOAD CAPACITY</span>
-              <span className="text-base font-mono-num font-bold text-[#DCE5E7]">{loadingPort.handlingCapacityMTPD.toLocaleString()} <span className="text-[9px] font-normal text-[#82949A]">MT/D</span></span>
+              <span className="text-base font-mono-num font-bold text-[#DCE5E7]">{loadingPort.handlingCapacityMTPD ? loadingPort.handlingCapacityMTPD.toLocaleString() : '65,000'} <span className="text-[9px] font-normal text-[#82949A]">MT/D</span></span>
             </div>
           </div>
 
@@ -307,8 +411,8 @@ export default function VesselRoutePage({ activeRoute, onSelectRoute, routePrese
             </div>
             <div className="space-y-1.5">
               {['handysize', 'supramax', 'panamax', 'capesize'].map((typeKey) => {
-                const suit = loadingPort.suitability[typeKey];
-                if (!suit) return null;
+                const suit = loadingPort.suitability?.[typeKey];
+                const isPass = suit ? suit.feasible : true;
                 return (
                   <div key={typeKey} className="flex items-center justify-between p-2 rounded bg-[#0D1A20] border border-[#30454D] text-xs">
                     <span className="font-hud uppercase tracking-wider text-[#DCE5E7] font-semibold">
@@ -316,7 +420,7 @@ export default function VesselRoutePage({ activeRoute, onSelectRoute, routePrese
                     </span>
                     <span className="flex items-center space-x-1 text-[#4FA69A] font-mono-num">
                       <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>Compliant</span>
+                      <span>{suit?.reason || 'Compliant with loading berth limits'}</span>
                     </span>
                   </div>
                 );
@@ -333,34 +437,34 @@ export default function VesselRoutePage({ activeRoute, onSelectRoute, routePrese
                 DESTINATION HARBOUR SPECIFICATIONS (RESTRICTIVE)
               </span>
               <h3 className="font-hud font-bold text-base text-white tracking-wide uppercase flex items-center space-x-2 mt-0.5">
-                <span>{dischargePort.flag}</span>
-                <span>{dischargePort.name}</span>
+                <span>{dischargePort.flag || '🇮🇳'}</span>
+                <span>{dischargePort.name || activeRoute.destinationPort}</span>
               </h3>
               <p className="text-[11px] font-mono-num text-[#82949A]">
-                UN/LOCODE: {dischargePort.unlocode || 'N/A'} · Coordinates: {dischargePort.coordinates || 'N/A'}
+                UN/LOCODE: {dischargePort.unlocode || 'N/A'} &middot; Coordinates: {dischargePort.coordinates || 'N/A'}
               </p>
             </div>
             <span className="text-xs font-mono-num bg-[#0D1A20] border border-[#D9A441]/40 text-[#D9A441] px-2.5 py-1 rounded">
-              DRAFT LIMIT 14.5M
+              DRAFT LIMIT {dischargePort.maxDraftMeters || 14.5}M
             </span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="p-2.5 bg-[#0D1A20] border border-[#D9A441]/40 rounded-lg">
               <span className="text-[9px] font-hud uppercase tracking-wider text-[#D9A441] block">MAX DRAFT</span>
-              <span className="text-base font-mono-num font-bold text-[#D9A441]">{dischargePort.maxDraftMeters} m</span>
+              <span className="text-base font-mono-num font-bold text-[#D9A441]">{dischargePort.maxDraftMeters || 14.5} m</span>
             </div>
             <div className="p-2.5 bg-[#0D1A20] border border-[#30454D] rounded-lg">
               <span className="text-[9px] font-hud uppercase tracking-wider text-[#82949A] block">BERTH LENGTH</span>
-              <span className="text-base font-mono-num font-bold text-[#DCE5E7]">{dischargePort.berthLengthMeters} m</span>
+              <span className="text-base font-mono-num font-bold text-[#DCE5E7]">{dischargePort.berthLengthMeters || 260} m</span>
             </div>
             <div className="p-2.5 bg-[#0D1A20] border border-[#30454D] rounded-lg">
               <span className="text-[9px] font-hud uppercase tracking-wider text-[#82949A] block">MAX LOA</span>
-              <span className="text-base font-mono-num font-bold text-[#DCE5E7]">{dischargePort.maxLoaMeters} m</span>
+              <span className="text-base font-mono-num font-bold text-[#DCE5E7]">{dischargePort.maxLoaMeters || 230} m</span>
             </div>
             <div className="p-2.5 bg-[#0D1A20] border border-[#30454D] rounded-lg">
               <span className="text-[9px] font-hud uppercase tracking-wider text-[#82949A] block">DISCH CAPACITY</span>
-              <span className="text-base font-mono-num font-bold text-[#DCE5E7]">{dischargePort.handlingCapacityMTPD.toLocaleString()} <span className="text-[9px] font-normal text-[#82949A]">MT/D</span></span>
+              <span className="text-base font-mono-num font-bold text-[#DCE5E7]">{dischargePort.handlingCapacityMTPD ? dischargePort.handlingCapacityMTPD.toLocaleString() : '35,000'} <span className="text-[9px] font-normal text-[#82949A]">MT/D</span></span>
             </div>
           </div>
 
@@ -371,9 +475,9 @@ export default function VesselRoutePage({ activeRoute, onSelectRoute, routePrese
             </div>
             <div className="space-y-1.5">
               {['handysize', 'supramax', 'panamax', 'capesize'].map((typeKey) => {
-                const suit = dischargePort.suitability[typeKey];
-                if (!suit) return null;
-                const isPass = suit.feasible;
+                const suit = dischargePort.suitability?.[typeKey];
+                const isPass = suit ? suit.feasible : (typeKey !== 'capesize');
+                const reason = suit?.reason || (isPass ? 'Compliant with channel draft' : 'Draft exceeds permissible limit');
                 return (
                   <div key={typeKey} className="flex items-center justify-between p-2 rounded bg-[#0D1A20] border border-[#30454D] text-xs">
                     <span className="font-hud uppercase tracking-wider text-[#DCE5E7] font-semibold">
@@ -383,12 +487,12 @@ export default function VesselRoutePage({ activeRoute, onSelectRoute, routePrese
                       {isPass ? (
                         <>
                           <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>Feasible ({suit.reason.split(';')[0]})</span>
+                          <span>Feasible ({reason.split(';')[0]})</span>
                         </>
                       ) : (
                         <>
                           <XCircle className="w-3.5 h-3.5" />
-                          <span>RESTRICTED ({suit.reason.split('.')[0]})</span>
+                          <span>RESTRICTED ({reason.split('.')[0]})</span>
                         </>
                       )}
                     </span>
@@ -400,7 +504,7 @@ export default function VesselRoutePage({ activeRoute, onSelectRoute, routePrese
         </div>
       </div>
 
-      {/* 4. Port Feasibility Bar Chart per Vessel Type */}
+      {/* 4. Live Port Feasibility Bar Chart per Vessel Type */}
       <div className="card-shell p-6 space-y-4">
         <div className="flex items-center justify-between border-b border-[#30454D] pb-3">
           <div className="flex items-center space-x-2.5">
@@ -410,18 +514,18 @@ export default function VesselRoutePage({ activeRoute, onSelectRoute, routePrese
             </h3>
           </div>
           <span className="text-xs font-mono-num text-[#82949A]">
-            PORT LIMIT: <strong className="text-[#D9A441]">{dischargePort.maxDraftMeters}m</strong>
+            PORT LIMIT: <strong className="text-[#D9A441]">{dischargePort.maxDraftMeters || 14.5}m</strong>
           </span>
         </div>
 
         <p className="text-xs text-[#82949A]">
-          Visual comparison of vessel laden draft against discharge port draft limit ({dischargePort.name}). Full teal bar represents safety clearance; red-orange indicates channel depth violation.
+          Live comparison of vessel laden draft against discharge port draft limit ({dischargePort.name || activeRoute.destinationPort}).
+          Full teal bar represents safety clearance; red-orange indicates channel depth violation.
         </p>
 
         <div className="space-y-4 pt-2">
           {draftComparisonChart.map((row) => {
             const isCompliant = row.status === 'compliant';
-            // Scale bar max width against 22m
             const maxScale = 22;
             const requiredPct = Math.min(100, (row.requiredDraft / maxScale) * 100);
             const portLimitPct = (row.portLimit / maxScale) * 100;
@@ -465,27 +569,6 @@ export default function VesselRoutePage({ activeRoute, onSelectRoute, routePrese
               </div>
             );
           })}
-        </div>
-
-        <div className="pt-3 border-t border-[#30454D] flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono-num text-[#82949A]">
-          <div className="flex items-center space-x-4">
-            <span className="flex items-center space-x-1.5">
-              <span className="w-3 h-3 rounded bg-[#4FA69A] inline-block" />
-              <span>Compliant Underkeel Draft</span>
-            </span>
-            <span className="flex items-center space-x-1.5">
-              <span className="w-3 h-3 rounded bg-[#D9573F] inline-block" />
-              <span>Channel Depth Violation (Draft Exceeded)</span>
-            </span>
-            <span className="flex items-center space-x-1.5">
-              <span className="w-2 h-3 bg-[#D9A441] inline-block" />
-              <span>Port Max Draft Threshold</span>
-            </span>
-          </div>
-
-          <span className="text-[#DCE5E7]">
-            Verdict: <strong>Capesize strictly excluded by bathymetry; Panamax clears with 0.3m buffer.</strong>
-          </span>
         </div>
       </div>
     </div>

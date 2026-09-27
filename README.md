@@ -90,79 +90,73 @@ CHARTER AI
     └── Machine learning model API hook simulation & JSON payload preview
 ```
 
----
+## 🛠 Tech Stack & Architecture
 
-## Getting Started
+### Frontend (Dashboard UI)
+- **Framework**: React 19 + Vite 5.4
+- **Styling**: Tailwind CSS v4 (Vanilla CSS variables + utility classes)
+- **Visualizations**: Recharts / Chart.js (Freight trendline, 95% CI band, cost stacked bars, draft spectrum)
+- **Geospatial Map**: Leaflet + React-Leaflet (Custom dark tile filter, geodetic route paths, port popups)
+- **Icons**: Lucide React
+- **Data Layer**: Custom `useRecommendation` hook with live API integration & automatic fallback to `mockData.js`
 
-### Prerequisites
-- Node.js 18+ or 20+
-- npm
-
-### Installation & Run
-```bash
-# Clone the repository
-git clone https://github.com/Srinidhi-2007/charter-ai.git
-cd charter-ai
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Or build for production preview
-npm run build
-npm run preview
-```
-
-Open [http://localhost:5173/](http://localhost:5173/) in your browser.
+### Backend (FastAPI Service)
+- **Framework**: Python 3.11+ FastAPI + Uvicorn
+- **Freight Forecasting**: Statsmodels ARIMA (2,1,2) + XGBoost Ensemble for 14-day rate trajectory with 95% confidence intervals
+- **Feasibility Engine**: Port bathymetric envelope validation (Draft, LOA, Beam)
+- **Cost Engine**: Multi-factor voyage cost estimator (Freight, Demurrage, Bunker index, USD/INR conversion, lot splitting)
+- **Data Validation**: Strict contract validation (`validate_contract.py`) against `contract.json` single source of truth
+- **Testing**: `pytest` (33 tests covering routes, feasibility, cost math, contract integrity, and endpoints)
 
 ---
 
-### Backend Setup (FastAPI Service)
+## 🛰 REST API Specifications
 
-#### 1. Navigate to the backend directory
+The dashboard connects to the FastAPI backend service (`http://localhost:8000`).
+
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/api/v1/charter/recommend` | `POST` | Primary recommendation orchestrator. Accepts cargo requirements & assumptions; returns winner vessel, timing window, itemized costs, feasibility matrix, 14-day rate forecast, and risk telemetry. |
+| `/api/v1/ports` | `GET` | Returns list of loading/discharge ports with bathymetric envelopes (max draft, LOA, beam, gear requirements). |
+| `/api/v1/vessels` | `GET` | Returns full vessel fleet database with dimensions, draft, deadweight tonnage (DWT), and daily demurrage rates. |
+| `/api/v1/routes` | `GET` | Returns sea distance overrides and pre-configured quick scenarios (e.g., Newcastle -> Paradip). |
+| `/health` | `GET` | Health check endpoint returning status, active data source (`synthetic` / `real`), and latest rate data timestamp. |
+
+---
+
+## 🚀 Quick Start Guide
+
+### 1. Start Backend (FastAPI)
 ```bash
 cd charter-ai-backend
-```
-
-#### 2. Create and activate a virtual environment
-```bash
-# Create virtual environment
 python -m venv .venv
 
-# Activate on Windows (PowerShell):
+# Activate virtual environment
+# Windows (PowerShell):
 .venv\Scripts\Activate.ps1
+# Linux/macOS:
+# source .venv/bin/activate
 
-# Activate on Windows (Command Prompt):
-.venv\Scripts\activate.bat
-
-# Activate on macOS / Linux:
-source .venv/bin/activate
-```
-
-#### 3. Install dependencies
-```bash
 pip install -r requirements.txt
+pytest -q  # Run test suite (33 tests)
+uvicorn main:app --port 8000 --reload
 ```
 
-#### 4. Run tests
+### 2. Start Frontend (React + Vite)
 ```bash
-pytest -q
+# In project root:
+npm install
+npm run dev
 ```
 
-#### 5. Run development server (when ready)
-```bash
-uvicorn main:app --reload --port 8000
-```
+Open [http://localhost:5173/](http://localhost:5173/) (or port 5174). The dashboard automatically detects the running backend and displays **`LIVE MODEL`** telemetry mode!
 
 ---
 
-## Future Machine Learning Pipeline Ingestion
+## 📑 Demo Scenarios & Data Provenance
 
-All frontend panels consume from a single reactive mock data store located at `src/data/mockData.js`. 
+See [`DEMO.md`](file:///d:/charterAI/DEMO.md) and [`demo_scenarios.json`](file:///d:/charterAI/demo_scenarios.json) for:
+- 5-minute interactive walkthrough path
+- Pre-configured test scenarios (Default Coking Coal, Iron Ore to Vizag, Bauxite to Haldia, 150k MT Stress Split)
+- Detailed breakdown of **REAL** vs **ASSUMED/SYNTHETIC** data sources (SIH26006 compliance)
 
-To integrate a live Python/FastAPI/CatBoost/Prophet backend:
-1. Deploy your inference endpoint (e.g. `POST /api/v1/charter/recommend`).
-2. Pass the JSON schema defined in `src/pages/SettingsPage.jsx`.
-3. Replace the static import in `src/App.jsx` with an asynchronous `fetch()` hook. The entire UI will react without any layout changes.

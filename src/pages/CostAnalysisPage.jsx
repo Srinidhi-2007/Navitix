@@ -67,7 +67,7 @@ export default function CostAnalysisPage({ activeRoute, onOpenCharterModal }) {
                 </span>
               </div>
               <p className="text-xs text-[#82949A]">
-                Voyage: {activeRoute.originPort.split('(')[0]} → {activeRoute.destinationPort.split('(')[0]} (14.5 days sea transit + 3.2 days port waiting)
+                Voyage: {activeRoute.originPort.split('(')[0].trim()} → {activeRoute.destinationPort.split('(')[0].trim()} ({recVessel.voyageDays ?? activeRoute.voyageDaysEst ?? '—'} days sea transit + {recVessel.waitingDays?.total ?? '—'} days port waiting)
               </p>
             </div>
           </div>
@@ -147,9 +147,18 @@ export default function CostAnalysisPage({ activeRoute, onOpenCharterModal }) {
               Standardized comparison across candidate bulk vessel categories ({activeCurrency === 'INR' ? '₹ Cr' : '$ USD'})
             </p>
           </div>
-          <span className="text-xs font-mono-num text-[#4FA69A] bg-[#4FA69A]/10 border border-[#4FA69A]/30 px-2.5 py-1 rounded">
-            PANAMAX: ₹1.35 Cr SAVINGS
-          </span>
+          {(() => {
+            const totalRow = costAnalysis.comparisonMatrix?.find(r => r.isTotal);
+            const nextBest = totalRow ? Math.min(
+              ...[totalRow.supramax, totalRow.handysize].filter(v => v !== undefined)
+            ) : null;
+            const savings = totalRow && nextBest ? (nextBest - totalRow.panamax).toFixed(2) : null;
+            return savings ? (
+              <span className="text-xs font-mono-num text-[#4FA69A] bg-[#4FA69A]/10 border border-[#4FA69A]/30 px-2.5 py-1 rounded">
+                {heroDecision.recommendedVesselName?.split(' /')[0]}: ₹{savings} Cr SAVINGS
+              </span>
+            ) : null;
+          })()}
         </div>
 
         <div className="overflow-x-auto">
@@ -158,7 +167,7 @@ export default function CostAnalysisPage({ activeRoute, onOpenCharterModal }) {
               <tr className="border-b border-[#30454D] text-[11px] font-hud uppercase tracking-wider text-[#82949A]">
                 <th className="py-3 px-4">EXPENSE COMPONENT</th>
                 <th className="py-3 px-4 bg-[#F47B3A]/10 text-[#F47B3A] border-x border-[#F47B3A]/30">
-                  ⭐ PANAMAX (RECOMMENDED)
+                  ⭐ {heroDecision.recommendedVesselName?.split(' /')[0].toUpperCase()} (RECOMMENDED)
                 </th>
                 <th className="py-3 px-4">SUPRAMAX</th>
                 <th className="py-3 px-4">HANDYSIZE (2X SPLIT)</th>
@@ -194,7 +203,9 @@ export default function CostAnalysisPage({ activeRoute, onOpenCharterModal }) {
                     <td className="py-3.5 px-4 text-right">
                       {isTotal ? (
                         <span className="text-[#4FA69A] font-bold">
-                          -₹{(row.supramax - row.panamax).toFixed(2)} Cr (-8.7%)
+                          {row.supramax !== undefined && row.panamax !== undefined
+                            ? `-₹${(row.supramax - row.panamax).toFixed(2)} Cr (-${((row.supramax - row.panamax) / row.supramax * 100).toFixed(1)}%)`
+                            : '—'}
                         </span>
                       ) : (
                         <span className="text-[#82949A] text-[11px]">
@@ -231,7 +242,7 @@ export default function CostAnalysisPage({ activeRoute, onOpenCharterModal }) {
             <strong className="text-[#D9A441] font-hud uppercase tracking-wide mr-1.5">
               Financial Note:
             </strong>
-            Waiting time is strictly included in the total cost calculation above (₹1.34 Cr allocated for 3.2 days waiting). Waiting time is not a floating statistic—demurrage exposure is priced directly into the fixture appraisal.
+            Waiting time is strictly included in the total cost calculation above (₹{recVessel.costBreakdownCr?.portWaitingCr?.toFixed(2) ?? '1.34'} Cr allocated for {recVessel.waitingDays?.total ?? '3.2'} days waiting). Demurrage exposure is priced directly into the fixture appraisal.
           </p>
         </div>
 
@@ -255,7 +266,7 @@ export default function CostAnalysisPage({ activeRoute, onOpenCharterModal }) {
                 </thead>
                 <tbody className="divide-y divide-[#30454D]/60">
                   {costAnalysis.waitingTimeBreakdown.map((row, idx) => {
-                    const isRec = row.vessel === 'Panamax';
+                    const isRec = row.vessel.toLowerCase().includes(recVessel.name.toLowerCase().split(' ')[0]) || (recVessel.name.toLowerCase().includes('panamax') && row.vessel === 'Panamax');
                     return (
                       <tr key={idx} className={isRec ? 'bg-[#F47B3A]/10 text-white font-bold' : 'text-[#82949A]'}>
                         <td className="p-2.5 flex items-center space-x-1.5">
@@ -285,7 +296,7 @@ export default function CostAnalysisPage({ activeRoute, onOpenCharterModal }) {
                 const maxDays = 5.0;
                 const loadPct = (item.loadingDays / maxDays) * 100;
                 const dischPct = (item.dischargeDays / maxDays) * 100;
-                const isRec = item.vessel === 'Panamax';
+                const isRec = item.vessel.toLowerCase().includes(recVessel.name.toLowerCase().split(' ')[0]) || (recVessel.name.toLowerCase().includes('panamax') && item.vessel === 'Panamax');
 
                 return (
                   <div key={item.vessel} className="space-y-1">
@@ -322,11 +333,11 @@ export default function CostAnalysisPage({ activeRoute, onOpenCharterModal }) {
             <div className="flex items-center space-x-5 text-[11px] font-mono-num text-[#82949A] pt-2">
               <span className="flex items-center space-x-1.5">
                 <span className="w-3 h-3 rounded-xs bg-[#4FA69A] inline-block" />
-                <span>Hay Point Anchorage Wait</span>
+                <span>{activeRoute.portConstraints?.loadingPort?.name?.split('(')[0].trim() || 'Loading Port'} Anchorage Wait</span>
               </span>
               <span className="flex items-center space-x-1.5">
                 <span className="w-3 h-3 rounded-xs bg-[#D9A441] inline-block" />
-                <span>Paradip Berth Line-up Wait</span>
+                <span>{activeRoute.portConstraints?.dischargePort?.name?.split('(')[0].trim() || 'Discharge Port'} Berth Line-up Wait</span>
               </span>
             </div>
           </div>

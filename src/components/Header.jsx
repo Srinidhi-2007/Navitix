@@ -27,7 +27,7 @@ export default function Header({ activeTab, activeRoute, onSelectRoute, routePre
       case 'risk-confidence': return { title: 'Risk & Scenario Analysis + Forecast Confidence', section: 'RISK MANAGEMENT' };
       case 'compare-vessels': return { title: 'Compare Vessels', section: 'FLEET EVALUATION' };
       case 'settings': return { title: 'System & Model Settings', section: 'CONFIGURATION' };
-      default: return { title: 'Charter AI Dashboard', section: 'OPERATIONS' };
+      default: return { title: 'Navitix Dashboard', section: 'OPERATIONS' };
     }
   };
 
@@ -44,7 +44,7 @@ export default function Header({ activeTab, activeRoute, onSelectRoute, routePre
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-hud font-bold text-base tracking-wider text-[#DCE5E7]">CHARTER AI</span>
+                <span className="font-hud font-bold text-base tracking-wider text-[#DCE5E7]">NAVITIX</span>
                 <span className="text-[10px] font-mono-num font-medium px-1.5 py-0.5 rounded bg-[#20343C] text-[#82949A] border border-[#30454D]">
                   v2.4 HUD
                 </span>

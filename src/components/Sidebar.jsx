@@ -82,7 +82,7 @@ export default function Sidebar({ activeTab, onSelectTab, activeRoute }) {
               <Anchor className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="font-hud font-bold text-lg tracking-wider text-[#DCE5E7]">CHARTER AI</h1>
+              <h1 className="font-hud font-bold text-lg tracking-wider text-[#DCE5E7]">NAVITIX</h1>
               <span className="text-[10px] font-mono-num text-[#82949A] tracking-wider uppercase">
                 VESSEL DECISION SYSTEM
               </span>

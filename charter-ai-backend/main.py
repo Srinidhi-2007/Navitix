@@ -1,5 +1,5 @@
 """
-Charter AI — FastAPI Recommendation Service
+Navitix — FastAPI Recommendation Service
 File: main.py
 
 Endpoints:
@@ -25,7 +25,7 @@ from recommend import NoFeasibleVesselError, recommend
 BASE_DIR = Path(__file__).parent
 
 app = FastAPI(
-    title="Charter AI Recommendation API",
+    title="Navitix Recommendation API",
     version="0.1.0-prototype",
     description="Intelligent decision-support system for vessel chartering and bulk cargo procurement.",
 )

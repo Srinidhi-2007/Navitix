@@ -1,4 +1,4 @@
-# Charter AI — Maritime Vessel Chartering Decision Dashboard
+# Navitix — Maritime Vessel Chartering Decision Dashboard
 
 [![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
 [![React](https://img.shields.io/badge/React-19.2-61DAFB?logo=react&logoColor=black)](https://react.dev/)
@@ -7,7 +7,7 @@
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)](https://python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-F47B3A.svg)](https://opensource.org/licenses/MIT)
 
-**Charter AI** is a full-stack decision-support prototype built for the **Smart India Hackathon** problem statement **SIH26006** (Ministry of Steel). It helps chartering managers and bulk commodity traders answer:
+**Navitix** is a full-stack decision-support prototype built for the **Smart India Hackathon** problem statement **SIH26006** (Ministry of Steel). It helps chartering managers and bulk commodity traders answer:
 
 > **"Given this cargo requirement and route, which vessel should I charter, when should I charter it, and what will it cost?"**
 
@@ -32,7 +32,7 @@ The system combines a **React dashboard** with a **Python FastAPI backend** runn
 
 ## How It Works
 
-Charter AI operates as a **three-layer pipeline**:
+Navitix operates as a **three-layer pipeline**:
 
 ```
 INPUT                        ANALYSIS                          DECISION

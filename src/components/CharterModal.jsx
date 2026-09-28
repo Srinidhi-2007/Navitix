@@ -20,10 +20,10 @@ export default function CharterModal({ isOpen, onClose, activeRoute }) {
 
   const vessel = activeRoute.candidateVessels.find(v => v.id === activeRoute.heroDecision.recommendedVesselId) || activeRoute.candidateVessels[0];
 
-  const brokerOrderText = `CHARTER FIXTURE ORDER — CHARTER AI DISPATCH
-REF: CAI-${Math.floor(100000 + Math.random() * 900000)}
+  const brokerOrderText = `CHARTER FIXTURE ORDER — NAVITIX DISPATCH
+REF: NVX-${Math.floor(100000 + Math.random() * 900000)}
 DATE: ${new Date().toISOString().slice(0, 10)}
-ACCOUNT: CHARTER AI COMMERCIAL DESK
+ACCOUNT: NAVITIX COMMERCIAL DESK
 
 CARGO: ${activeRoute.cargoQuantityMT.toLocaleString()} MT 5% MOLOO ${activeRoute.cargoType.toUpperCase()}
 VESSEL REQ: ${vessel.name.toUpperCase()} (MAX DRAFT ${vessel.draftMeters}M / LOA ${vessel.loaMeters}M)

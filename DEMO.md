@@ -1,4 +1,4 @@
-# Charter AI — Demonstration & Evaluation Guide
+# Navitix — Demonstration & Evaluation Guide
 
 > **SIH Problem Statement SIH26006 (Ministry of Steel)**  
 > *Intelligent Freight Forecasting & Vessel Chartering Decision Support System for India's East Coast Ports*

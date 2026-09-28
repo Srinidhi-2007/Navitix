@@ -1,162 +1,376 @@
-# ⚓ Charter AI — Maritime Vessel Chartering Decision Dashboard
+# Charter AI — Maritime Vessel Chartering Decision Dashboard
 
 [![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
 [![React](https://img.shields.io/badge/React-19.2-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)](https://python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-F47B3A.svg)](https://opensource.org/licenses/MIT)
 
-**Charter AI** is a high-fidelity decision-support prototype dashboard for maritime vessel chartering. It equips chartering managers and bulk commodity traders to answer the core operational question:
+**Charter AI** is a full-stack decision-support prototype built for the **Smart India Hackathon** problem statement **SIH26006** (Ministry of Steel). It helps chartering managers and bulk commodity traders answer:
 
-> **"Given this cargo requirement and route, what vessel should I charter, when should I charter it, and what will it likely cost?"**
+> **"Given this cargo requirement and route, which vessel should I charter, when should I charter it, and what will it cost?"**
 
----
-
-## 🎨 Visual Design System: "Dark Maritime Command Center"
-
-The UI is built on a dark naval telemetry design system with glassmorphic translucent panels and signal color hierarchy:
-
-| Element | Color | Hex | Purpose |
-|---|---|---|---|
-| Main Background | Near-black navy | `#071014` | Primary app canvas |
-| Secondary Background | Deep navy | `#0D1A20` | Sidebar & inset backgrounds |
-| Cards / Panels | Slate navy | `#16262D` | Translucent glassmorphic cards (88% opacity) |
-| Elevated Panels | Blue-gray | `#20343C` | Highlighted containers |
-| Borders | Muted steel | `#30454D` | 1px clean HUD borders |
-| Primary Text | Off-white | `#DCE5E7` | Body and headers |
-| Secondary Text | Cool gray | `#82949A` | Subtext and captions |
-| **Primary Accent** | **Amber Orange** | **`#F47B3A`** | **Active selections, winner card, primary CTAs** |
-| Success Signal | Muted teal | `#4FA69A` | Compliant metrics, favorable trends |
-| Warning Signal | Amber | `#D9A441` | Cautions, congestion delays |
-| Danger / Excluded | Red-orange | `#D9573F` | Draft restrictions, unfeasible vessels |
-
-### Typography Hierarchy
-- **HUD Headings, Nav Labels, Section Titles**: `Space Grotesk` (uppercase, letter-spaced)
-- **Body & Descriptions**: `Inter`
-- **Numeric Figures, Timestamps, Coordinates, KPIs**: `JetBrains Mono` (tabular numeric alignment)
+The system combines a **React dashboard** with a **Python FastAPI backend** running freight rate forecasting, port feasibility checks, and cost optimization.
 
 ---
 
-## 🗺 System Architecture (3 Layers)
+## Table of Contents
 
-1. **Input Layer**: Cargo commodity, tonnage (e.g. 50,000 MT Coking Coal), loading port, discharge port, arrival date, and laycan allowances.
-2. **Analysis Layer**: Port bathymetric draft envelopes, candidate fleet feasibility checks, 14-day predicted freight trajectory, port waiting demurrage, and multi-factor risk auditing.
-3. **Decision Layer**: Recommended vessel pick (Panamax), charter timing window (*"Charter within 3–5 days"*), expected total cost (₹14.22 Cr), and model confidence score (87%).
+- [How It Works](#how-it-works)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Dashboard Pages](#dashboard-pages)
+- [Backend Modules](#backend-modules)
+- [REST API Reference](#rest-api-reference)
+- [Quick Start](#quick-start)
+- [Testing](#testing)
+- [Design System](#design-system)
+- [Data Provenance](#data-provenance)
 
 ---
 
-##  Modules & Pages
+## How It Works
+
+Charter AI operates as a **three-layer pipeline**:
 
 ```
-CHARTER AI
-├── Overview / Decision Dashboard (Home)
-│   ├── Hero recommendation card (Panamax, timing action, expected cost)
-│   ├── 5 KPI HUD readout cards
-│   ├── Embedded freight forecast mini-chart
-│   ├── Candidate vessel comparison strip
-│   ├── "Why this vessel?" executive rationale card
-│   ├── Alerts & insights live feed
-│   └── "CHARTER NOW" primary CTA modal trigger
-│
-├── Vessel & Route + Port Constraints
-│   ├── Interactive voyage & laycan input section
-│   ├── 4-vessel feasibility check with draft limitation explanations
-│   ├── Side-by-side loading port & discharge port constraint cards
-│   └── Port draft feasibility spectrum comparative bar chart
-│
-├── Freight Forecast
-│   ├── 45-day continuous timeline chart (historical spot + 14-day predicted)
-│   ├── Shaded 95% confidence interval envelope & BPI benchmark
-│   ├── Current market rate pin & optimal charter window trough marker
-│   └── 3 key stat callouts (Current rate, Trough rate, Expected change)
-│
-├── Cost Analysis
-│   ├── Recommended vessel itemized cost breakdown (Freight, Demurrage, Bunkers, Misc)
-│   ├── Stacked visual cost bar with currency switcher (₹ Cr / $ USD)
-│   ├── Cross-fleet comparison matrix highlighting Panamax ₹1.35 Cr savings
-│   └── Port waiting time breakdown explicitly included in total cost
-│
-├── Risk & Scenario Analysis + Forecast Confidence
-│   ├── Discrete risk factor audit (Volatility, Congestion, Uncertainty, Availability)
-│   ├── 3 outcome scenarios (Best Case, Expected Case, Worst Case)
-│   ├── Confidence telemetry gauge (87%) with low-confidence guardrails
-│   └── Model feature attribution weights
-│
-├── Compare Vessels
-│   ├── 3 side-by-side standardized cards (Panamax, Supramax, Handysize)
-│   └── Recommended pick highlighted with an orange border and warm glow
-│
-└── Settings
-    ├── Commercial assumptions (currency, demurrage rate, bunker price index)
-    └── Machine learning model API hook simulation & JSON payload preview
+INPUT                        ANALYSIS                          DECISION
+─────────────────────       ─────────────────────────         ─────────────────────────────
+Cargo: 50,000 MT        ->  Port draft feasibility check  ->  Recommended: Panamax
+Commodity: Coking Coal       Vessel class screening            Charter window: Day +3 to +5
+Origin: Hay Point (AU)       14-day freight rate forecast      Expected cost: INR 14.22 Cr
+Destination: Paradip (IN)    Multi-factor cost estimation      Confidence: 87%
+Laycan: 15 Jul 2026          Risk & scenario analysis          Savings vs. next best: INR 1.35 Cr
 ```
 
-## 🛠 Tech Stack & Architecture
-
-### Frontend (Dashboard UI)
-- **Framework**: React 19 + Vite 5.4
-- **Styling**: Tailwind CSS v4 (Vanilla CSS variables + utility classes)
-- **Visualizations**: Recharts / Chart.js (Freight trendline, 95% CI band, cost stacked bars, draft spectrum)
-- **Geospatial Map**: Leaflet + React-Leaflet (Custom dark tile filter, geodetic route paths, port popups)
-- **Icons**: Lucide React
-- **Data Layer**: Custom `useRecommendation` hook with live API integration & automatic fallback to `mockData.js`
-
-### Backend (FastAPI Service)
-- **Framework**: Python 3.11+ FastAPI + Uvicorn
-- **Freight Forecasting**: Statsmodels ARIMA (2,1,2) + XGBoost Ensemble for 14-day rate trajectory with 95% confidence intervals
-- **Feasibility Engine**: Port bathymetric envelope validation (Draft, LOA, Beam)
-- **Cost Engine**: Multi-factor voyage cost estimator (Freight, Demurrage, Bunker index, USD/INR conversion, lot splitting)
-- **Data Validation**: Strict contract validation (`validate_contract.py`) against `contract.json` single source of truth
-- **Testing**: `pytest` (33 tests covering routes, feasibility, cost math, contract integrity, and endpoints)
+1. **Input Layer** — User enters cargo type, tonnage, origin port, discharge port, target arrival date, and laycan window via the Voyage & Cargo Specifications panel. Custom inputs trigger a live backend call.
+2. **Analysis Layer** — The backend validates vessel feasibility against port bathymetric envelopes (draft, LOA, beam), generates a 14-day freight rate trajectory using ARIMA + XGBoost, estimates voyage costs across candidate vessel classes, and runs risk audits.
+3. **Decision Layer** — The dashboard presents the recommended vessel pick with itemized costs, a charter timing window aligned to the predicted rate trough, model confidence, and comparative analysis across all candidates.
 
 ---
 
-## 🛰 REST API Specifications
+## Tech Stack
 
-The dashboard connects to the FastAPI backend service (`http://localhost:8000`).
+### Frontend
 
-| Endpoint | Method | Purpose |
+| Technology | Version | Purpose |
 |---|---|---|
-| `/api/v1/charter/recommend` | `POST` | Primary recommendation orchestrator. Accepts cargo requirements & assumptions; returns winner vessel, timing window, itemized costs, feasibility matrix, 14-day rate forecast, and risk telemetry. |
-| `/api/v1/ports` | `GET` | Returns list of loading/discharge ports with bathymetric envelopes (max draft, LOA, beam, gear requirements). |
-| `/api/v1/vessels` | `GET` | Returns full vessel fleet database with dimensions, draft, deadweight tonnage (DWT), and daily demurrage rates. |
-| `/api/v1/routes` | `GET` | Returns sea distance overrides and pre-configured quick scenarios (e.g., Newcastle -> Paradip). |
-| `/health` | `GET` | Health check endpoint returning status, active data source (`synthetic` / `real`), and latest rate data timestamp. |
+| **React** | 19.2 | UI component framework |
+| **Vite** | 5.4 | Build tool and dev server (HMR) |
+| **Tailwind CSS** | v4 | Utility-first CSS with CSS variables |
+| **Leaflet + React-Leaflet** | 1.9 / 5.0 | Interactive maritime route map with dark tiles |
+| **Lucide React** | 1.41 | Icon library (Ship, Anchor, Award, etc.) |
+| **clsx** | 2.1 | Conditional class name utility |
+| **OxLint** | 1.79 | Fast JavaScript linter |
+
+All chart visualizations (freight forecast timeline, cost breakdowns, draft spectrum bars) are built with **raw SVG** inside React components — no charting library dependency.
+
+### Backend
+
+| Technology | Version | Purpose |
+|---|---|---|
+| **Python** | 3.11+ | Runtime |
+| **FastAPI** | 0.115+ | Async REST API framework |
+| **Uvicorn** | latest | ASGI server |
+| **Pydantic** | 2.x | Request/response validation |
+| **Statsmodels** | latest | ARIMA(2,1,2) time-series forecasting |
+| **XGBoost** | latest | Gradient-boosted ensemble rate prediction |
+| **scikit-learn** | latest | Feature preprocessing and model utilities |
+| **pandas / NumPy** | latest | Data manipulation and numerical computation |
+| **pytest + httpx** | latest | Test framework with async HTTP test client |
+
+### Data Files (Backend)
+
+| File | Contents |
+|---|---|
+| `contract.json` | Single source of truth for API request/response schema |
+| `ports.json` | Port database with bathymetric envelopes (draft, LOA, beam, berth length, handling capacity) |
+| `vessels.json` | Vessel fleet specifications (DWT, draft, LOA, beam, fuel consumption, demurrage rates) |
+| `routes.json` | Sea distance overrides for known port pairs |
+| `rates.csv` | Historical freight rate time-series data (synthetic, labeled) |
 
 ---
 
-## 🚀 Quick Start Guide
+## Project Structure
 
-### 1. Start Backend (FastAPI)
+```
+charter-ai/
+├── src/                          # React frontend source
+│   ├── api/
+│   │   ├── charterApi.js         # HTTP client for backend endpoints
+│   │   └── adapter.js            # Transforms backend JSON -> dashboard data shape
+│   ├── components/
+│   │   ├── Header.jsx            # Top bar with active query display and mode indicator
+│   │   ├── Sidebar.jsx           # Navigation sidebar with 7 page tabs
+│   │   ├── RouteMap.jsx          # Leaflet maritime map with port markers and route line
+│   │   └── CharterModal.jsx      # "Charter Now" confirmation modal
+│   ├── pages/
+│   │   ├── OverviewPage.jsx      # Decision dashboard home (hero card, KPIs, mini-chart)
+│   │   ├── VesselRoutePage.jsx   # Voyage input, vessel cards, port constraint panels
+│   │   ├── CompareVesselsPage.jsx# Side-by-side vessel comparison cards
+│   │   ├── FreightForecastPage.jsx # Full SVG forecast chart with CI bands
+│   │   ├── CostAnalysisPage.jsx  # Itemized cost breakdown and cross-fleet matrix
+│   │   ├── RiskConfidencePage.jsx # Risk factors, scenarios, confidence gauge
+│   │   └── SettingsPage.jsx      # Commercial assumptions and API telemetry
+│   ├── hooks/
+│   │   └── useRecommendation.js  # Core data hook: API fetch, debounce, mock fallback
+│   ├── data/
+│   │   └── mockData.js           # 3 pre-configured route fixtures for offline mode
+│   ├── App.jsx                   # Root layout (sidebar + header + page router)
+│   ├── App.css                   # Global component styles (card-shell, scrollbar, etc.)
+│   ├── index.css                 # Tailwind imports and CSS custom properties
+│   └── main.jsx                  # React DOM entry point
+│
+├── charter-ai-backend/           # Python FastAPI service (flat structure, no packages)
+│   ├── main.py                   # FastAPI app, CORS, endpoint definitions
+│   ├── recommend.py              # Orchestrator: assembles full recommendation response
+│   ├── rules.py                  # Port feasibility engine (draft, LOA, beam validation)
+│   ├── cost.py                   # Multi-factor voyage cost estimator
+│   ├── forecast.py               # ARIMA + XGBoost freight rate forecasting
+│   ├── routes.py                 # Sea distance lookup and Haversine estimation
+│   ├── rates_loader.py           # CSV rate data loader and preprocessor
+│   ├── contract.json             # API contract schema (single source of truth)
+│   ├── contract_validator.py     # Runtime contract validation utilities
+│   ├── validate_contract.py      # Standalone contract invariant checker
+│   ├── check_data.py             # Data integrity checker for ports/vessels JSON
+│   ├── verify_api_checks.py      # End-to-end API response verifier
+│   ├── ports.json                # Port bathymetric database
+│   ├── vessels.json              # Vessel fleet specifications
+│   ├── routes.json               # Sea distance overrides
+│   ├── rates.csv                 # Historical freight rate data (synthetic)
+│   ├── requirements.txt          # Python dependencies
+│   └── test_*.py                 # pytest test files (7 files, 33 tests total)
+│
+├── index.html                    # Vite HTML entry point
+├── vite.config.js                # Vite configuration with React and Tailwind plugins
+├── package.json                  # Node dependencies and scripts
+├── DEMO.md                       # 5-minute walkthrough guide
+└── demo_scenarios.json           # Pre-configured test scenarios
+```
+
+---
+
+## Dashboard Pages
+
+### 1. Overview / Decision Dashboard
+The home page. Displays the **hero recommendation card** (recommended vessel, charter timing, expected cost), five KPI cards (freight rate, voyage days, waiting days, savings, confidence), an embedded mini freight forecast chart, a ranked candidate vessel strip, a "Why this vessel?" rationale card, and an alerts feed. The primary "Charter Now" CTA triggers the confirmation modal.
+
+### 2. Voyage & Cargo Specifications (Vessel & Route)
+Interactive input panel where users configure the cargo query: commodity type, tonnage, origin port, discharge port, laycan dates, and commercial assumptions. Includes a **"Run Model"** button that sends custom parameters to the backend. Below the inputs: vessel feasibility cards (4 vessel classes with draft/LOA/beam pass/fail), an interactive Leaflet route map, and side-by-side loading/discharge port constraint panels with suitability tables.
+
+### 3. Compare Fleet
+Three standardized vessel cards (Panamax, Supramax, Handysize) displayed side-by-side for direct comparison. Each card shows capacity, draft, voyage days, waiting days, cost breakdown, freight rate, confidence score, and feasibility status. The recommended pick is highlighted with an orange border.
+
+### 4. Freight Rate Forecast
+A full-width SVG chart rendering a 45-day timeline: historical spot rates (solid teal), 14-day forecast trajectory (dashed orange), 95% confidence interval band, BPI benchmark overlay, and an optimal charter window shading. Date labels are staggered vertically to prevent overlap. Three stat callouts below: current market rate, projected trough rate, and expected change percentage.
+
+### 5. Cost Analysis
+Itemized cost breakdown for the recommended vessel (freight, demurrage, bunker fuel, port/canal/misc) with a visual stacked bar and INR/USD currency toggle. A cross-fleet comparison matrix shows costs for Panamax vs. Supramax vs. Handysize with the optimal advantage column. Port waiting time and demurrage impact are explicitly broken out.
+
+### 6. Risk & Scenario Analysis
+Four discrete risk factors (market volatility, port congestion, forecast uncertainty, vessel availability) each scored with severity levels. Three outcome scenarios (best, expected, worst case) with cost ranges. A confidence telemetry gauge displaying the model's overall confidence score with feature attribution weights.
+
+### 7. Settings
+Commercial assumptions editor (currency, FX rate, demurrage rate per day, bunker price index). ML model backend telemetry panel showing API health status, active data source mode, and a raw JSON payload preview.
+
+---
+
+## Backend Modules
+
+| Module | Responsibility |
+|---|---|
+| `main.py` | FastAPI app setup, CORS, all endpoint handlers |
+| `recommend.py` | Top-level orchestrator — calls rules, cost, forecast, routes; assembles the full recommendation payload conforming to `contract.json` |
+| `rules.py` | Port feasibility engine — validates vessel draft, LOA, beam against loading and discharge port bathymetric envelopes; generates feasibility reasons and badge labels |
+| `cost.py` | Voyage cost estimator — computes freight, bunker fuel, demurrage, port charges, canal fees; handles USD-to-INR conversion, cargo splitting for oversized lots |
+| `forecast.py` | Freight rate forecasting — fits ARIMA(2,1,2) on historical rate data, blends with XGBoost ensemble predictions, generates 14-day trajectory with 95% CI bands, identifies optimal charter trough window |
+| `routes.py` | Sea distance lookup — checks `routes.json` for known overrides, falls back to Haversine great-circle estimation |
+| `rates_loader.py` | Loads and preprocesses `rates.csv` historical rate data |
+| `contract_validator.py` | Runtime validation utilities for checking API responses against contract invariants |
+| `validate_contract.py` | Standalone invariant checker: sorted time-series, single recommended vessel, cost sum consistency, confidence bounds, band ordering |
+| `check_data.py` | Data integrity checker for `ports.json` and `vessels.json` (duplicate IDs, missing fields) |
+
+---
+
+## REST API Reference
+
+Base URL: `http://localhost:8000`
+
+### POST `/api/v1/charter/recommend`
+
+Primary recommendation endpoint. Accepts cargo requirements and returns the full decision payload.
+
+**Request body:**
+```json
+{
+  "cargoType": "Coking Coal",
+  "cargoQuantityMT": 50000,
+  "originPortId": "hay-point",
+  "destinationPortId": "paradip",
+  "targetArrivalDate": "2026-07-15",
+  "laycanWindowDays": 5,
+  "assumptions": {
+    "bunkerPriceUSD": 520,
+    "demurrageRateUSD": 12500,
+    "fxRate": 83.5
+  }
+}
+```
+
+**Response:** Full recommendation object including `heroDecision`, `candidateVessels[]`, `portConstraints`, `freightForecast`, `costAnalysis`, `riskFactors[]`, and `kpis`. Schema defined in `contract.json`.
+
+### GET `/api/v1/ports`
+
+Returns all ports with bathymetric specifications.
+
+### GET `/api/v1/vessels`
+
+Returns all vessel classes with dimensions and operating parameters.
+
+### GET `/api/v1/routes`
+
+Returns sea distance overrides for configured port pairs.
+
+### GET `/health`
+
+Health check — returns `{ "status": "ok", "dataSource": "synthetic", "latestRateDate": "..." }`.
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- **Node.js** 18+ and **npm**
+- **Python** 3.11+ with **pip**
+
+### 1. Backend Setup
+
 ```bash
 cd charter-ai-backend
+
+# Create and activate virtual environment
 python -m venv .venv
 
-# Activate virtual environment
 # Windows (PowerShell):
 .venv\Scripts\Activate.ps1
 # Linux/macOS:
 # source .venv/bin/activate
 
+# Install dependencies
 pip install -r requirements.txt
-pytest -q  # Run test suite (33 tests)
+
+# Run tests (33 tests)
+pytest -q
+
+# Start the API server
 uvicorn main:app --port 8000 --reload
 ```
 
-### 2. Start Frontend (React + Vite)
+### 2. Frontend Setup
+
 ```bash
-# In project root:
+# From project root:
 npm install
 npm run dev
 ```
 
-Open [http://localhost:5173/](http://localhost:5173/) (or port 5174). The dashboard automatically detects the running backend and displays **`LIVE MODEL`** telemetry mode!
+### 3. Open the Dashboard
+
+Navigate to **http://localhost:5173/** in your browser.
+
+The dashboard automatically detects the running backend and switches from **MOCK DATA** mode to **LIVE MODEL** telemetry. The header indicator shows the active mode.
+
+### Available npm Scripts
+
+| Script | Command | Purpose |
+|---|---|---|
+| `dev` | `npm run dev` | Start Vite dev server with HMR |
+| `build` | `npm run build` | Production build to `dist/` |
+| `preview` | `npm run preview` | Preview production build locally |
+| `lint` | `npm run lint` | Run OxLint on source files |
 
 ---
 
-## 📑 Demo Scenarios & Data Provenance
+## Testing
 
-See [`DEMO.md`](file:///d:/charterAI/DEMO.md) and [`demo_scenarios.json`](file:///d:/charterAI/demo_scenarios.json) for:
-- 5-minute interactive walkthrough path
-- Pre-configured test scenarios (Default Coking Coal, Iron Ore to Vizag, Bauxite to Haldia, 150k MT Stress Split)
-- Detailed breakdown of **REAL** vs **ASSUMED/SYNTHETIC** data sources (SIH26006 compliance)
+### Backend (pytest)
 
+```bash
+cd charter-ai-backend
+.venv\Scripts\Activate.ps1   # or source .venv/bin/activate
+pytest -v
+```
+
+**33 tests** across 7 test files:
+
+| Test File | Coverage |
+|---|---|
+| `test_main.py` | API endpoints (health, ports, vessels, routes, recommend) |
+| `test_recommend.py` | Recommendation orchestrator (primary route, badges, no-feasible exception) |
+| `test_rules.py` | Feasibility engine (draft estimation, vessel screening, draft comparison) |
+| `test_routes.py` | Sea distance lookup (overrides, Haversine fallback, unknown port handling) |
+| `test_contract_validator.py` | Contract validation (schema checks, invariants) |
+| `test_validate_contract.py` | Standalone invariant checks (cost sums, time-series ordering, band bounds) |
+| `test_check_data.py` | Data integrity (clean data, duplicate detection, missing fields) |
+
+### Frontend (Build Verification)
+
+```bash
+npm run build   # Ensures zero compilation errors
+npm run lint    # OxLint static analysis
+```
+
+---
+
+## Design System
+
+The UI follows a **"Dark Maritime Command Center"** visual language with glassmorphic translucent panels and a signal-color hierarchy.
+
+### Color Palette
+
+| Role | Hex | Usage |
+|---|---|---|
+| Canvas | `#071014` | Primary app background |
+| Inset | `#0D1A20` | Sidebar, card insets |
+| Card | `#16262D` | Glassmorphic panels (88% opacity) |
+| Elevated | `#20343C` | Highlighted containers |
+| Border | `#30454D` | 1px HUD borders |
+| Primary Text | `#DCE5E7` | Body text and headers |
+| Secondary Text | `#82949A` | Captions and labels |
+| **Accent** | **`#F47B3A`** | **Active selections, recommended vessel, primary CTAs** |
+| Success | `#4FA69A` | Compliant metrics, favorable trends |
+| Warning | `#D9A441` | Caution indicators, congestion |
+| Danger | `#D9573F` | Draft restrictions, infeasible vessels |
+
+### Typography
+
+| Use | Font | Style |
+|---|---|---|
+| HUD headings, nav labels, section titles | Space Grotesk | Uppercase, letter-spaced |
+| Body text, descriptions | Inter | Regular weight |
+| Numbers, KPIs, coordinates, timestamps | JetBrains Mono | Tabular numeric alignment |
+
+---
+
+## Data Provenance
+
+This is a **2-day SIH prototype**. Data sourcing:
+
+| Data | Source | Label |
+|---|---|---|
+| Port bathymetric limits (draft, LOA, beam) | Indian Ports Association, port authority publications | Real (indicative) |
+| Vessel class dimensions and DWT ranges | Industry-standard bulk carrier classifications | Real |
+| Sea distances (Hay Point-Paradip, etc.) | Maritime distance databases, Haversine estimation | Real / Estimated |
+| Freight rate history (`rates.csv`) | Synthetically generated to match BPI patterns | **Synthetic** |
+| Cost assumptions (bunker prices, demurrage, FX) | Industry ranges, user-adjustable in Settings | **Assumption** |
+| ML model weights | Fit on synthetic data at runtime | **Synthetic** |
+
+See [`DEMO.md`](DEMO.md) and [`demo_scenarios.json`](demo_scenarios.json) for a 5-minute interactive walkthrough with pre-configured test scenarios.
+
+---
+
+## License
+
+MIT

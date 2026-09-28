@@ -44,6 +44,7 @@ export default function App() {
     routePresets,
     selectRoute,
     updateRequest,
+    evaluateCustomVoyage,
     applyScenario,
     refetch,
   } = useRecommendation();
@@ -70,6 +71,8 @@ export default function App() {
             routePresets={routePresets}
             requestPayload={requestPayload}
             updateRequest={updateRequest}
+            evaluateCustomVoyage={evaluateCustomVoyage}
+            isLoading={isLoading}
             applyScenario={applyScenario}
             loadingPorts={loadingPorts}
             dischargePorts={dischargePorts}

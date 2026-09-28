@@ -18,6 +18,8 @@ export default function VesselRoutePage({
   routePresets = [],
   requestPayload = {},
   updateRequest,
+  evaluateCustomVoyage,
+  isLoading = false,
   applyScenario,
   loadingPorts = [],
   dischargePorts = [],
@@ -41,6 +43,13 @@ export default function VesselRoutePage({
   const handleFieldChange = (field, value) => {
     if (updateRequest) {
       updateRequest(field, value);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      evaluateCustomVoyage?.();
     }
   };
 
@@ -151,7 +160,9 @@ export default function VesselRoutePage({
               type="text"
               value={cargoType}
               onChange={(e) => handleFieldChange('cargoType', e.target.value)}
+              onKeyDown={handleKeyDown}
               className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none"
+              placeholder="e.g. Coking Coal, Bauxite, Iron Ore"
             />
           </div>
 
@@ -166,7 +177,9 @@ export default function VesselRoutePage({
               step="5000"
               value={cargoQty}
               onChange={(e) => handleFieldChange('cargoQuantityMT', Math.max(1, Number(e.target.value)))}
+              onKeyDown={handleKeyDown}
               className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none font-bold"
+              placeholder="50000"
             />
           </div>
 
@@ -215,6 +228,7 @@ export default function VesselRoutePage({
               type="date"
               value={laycanStart}
               onChange={(e) => handleFieldChange('laycanStart', e.target.value)}
+              onKeyDown={handleKeyDown}
               className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none"
             />
           </div>
@@ -228,6 +242,7 @@ export default function VesselRoutePage({
               type="date"
               value={laycanEnd}
               onChange={(e) => handleFieldChange('laycanEnd', e.target.value)}
+              onKeyDown={handleKeyDown}
               className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none"
             />
           </div>
@@ -241,6 +256,7 @@ export default function VesselRoutePage({
               type="date"
               value={arrivalDate}
               onChange={(e) => handleFieldChange('desiredArrivalDate', e.target.value)}
+              onKeyDown={handleKeyDown}
               className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none"
             />
           </div>
@@ -266,6 +282,47 @@ export default function VesselRoutePage({
               <span className="font-bold">{allowSplit ? 'ON' : 'OFF'}</span>
             </button>
           </div>
+        </div>
+
+        {/* Action Button & Evaluation Feedback Bar */}
+        <div className="pt-4 border-t border-[#30454D] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+          <div className="flex items-center space-x-3 text-xs font-mono text-[#82949A]">
+            <span className={`w-2.5 h-2.5 rounded-full ${isLoading ? 'bg-[#F47B3A] animate-ping' : 'bg-[#4FA69A] animate-pulse'}`} />
+            <div>
+              <span className="text-[#DCE5E7] font-semibold">
+                Target: {cargoQty.toLocaleString()} MT {cargoType}
+              </span>
+              <span className="text-[#82949A] ml-2">
+                ({originPortId} &rarr; {destPortId})
+              </span>
+              <span className="text-[10px] text-[#82949A] block sm:inline sm:ml-2">
+                &middot; Press Enter or click button to run AI evaluation
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => evaluateCustomVoyage ? evaluateCustomVoyage() : updateRequest?.({})}
+            disabled={isLoading}
+            className={`px-8 py-3 rounded-lg text-xs font-hud font-bold uppercase tracking-wider transition-all duration-200 shadow-lg flex items-center justify-center space-x-2 cursor-pointer ${
+              isLoading
+                ? 'bg-[#20343C] text-[#82949A] border border-[#30454D] cursor-not-allowed'
+                : 'bg-[#F47B3A] hover:bg-[#FF9A5A] text-white shadow-[#F47B3A]/30 hover:shadow-[#F47B3A]/50 hover:-translate-y-0.5 active:translate-y-0'
+            }`}
+          >
+            {isLoading ? (
+              <>
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span>EVALUATING MODEL & PREDICTING...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4 text-white" />
+                <span>RUN MODEL EVALUATION & PREDICT</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
 

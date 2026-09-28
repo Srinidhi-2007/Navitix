@@ -114,6 +114,28 @@ export function useRecommendation(initialRouteId = DEFAULT_ROUTE_ID) {
     return portsList.filter(p => p.role === 'discharge' || p.role === 'both' || !p.role);
   }, [portsList]);
 
+  // Dynamic route presets including any active custom query
+  const routePresets = useMemo(() => {
+    if (!data) return ROUTE_PRESETS;
+    const isStandardPreset = ROUTE_PRESETS.some(p => p.id === data.id);
+    if (isStandardPreset) return ROUTE_PRESETS;
+
+    const originShort = (data.originPort || 'Origin').split(' ')[0].split('(')[0].trim();
+    const destShort = (data.destinationPort || 'Discharge').split(' ')[0].split('(')[0].trim();
+    const customEntry = {
+      id: data.id || `custom-${requestPayload.originPortId}-${requestPayload.destinationPortId}`,
+      label: `${data.originFlag || '🌐'} ${(data.cargoQuantityMT || requestPayload.cargoQuantityMT || 50000).toLocaleString()} MT ${data.cargoType || requestPayload.cargoType || 'Cargo'} (${originShort} → ${destShort}) [CUSTOM]`,
+      cargoType: data.cargoType || requestPayload.cargoType,
+      cargoQuantityMT: data.cargoQuantityMT || requestPayload.cargoQuantityMT,
+      originPort: data.originPort || requestPayload.originPortId,
+      originFlag: data.originFlag || '🌐',
+      destinationPort: data.destinationPort || requestPayload.destinationPortId,
+      destinationFlag: data.destinationFlag || '🌐',
+      isCustom: true,
+    };
+    return [customEntry, ...ROUTE_PRESETS];
+  }, [data, requestPayload]);
+
   const fetchRecommendation = useCallback(async (payload, routeId) => {
     // Guard: origin cannot equal destination
     if (payload.originPortId && payload.destinationPortId && payload.originPortId === payload.destinationPortId) {
@@ -130,6 +152,13 @@ export function useRecommendation(initialRouteId = DEFAULT_ROUTE_ID) {
     try {
       const response = await getRecommendation(payload);
       const adapted = adaptBackendResponse(response, payload);
+      const isCustomQuery = !Object.keys(PRESET_REQUEST_MAP).includes(routeId) || 
+        payload.cargoQuantityMT !== PRESET_REQUEST_MAP[routeId]?.cargoQuantityMT ||
+        payload.cargoType !== PRESET_REQUEST_MAP[routeId]?.cargoType;
+      
+      if (isCustomQuery) {
+        adapted.isCustom = true;
+      }
       setData(adapted);
       setStatus('success');
       setErrorMessage(null);
@@ -138,9 +167,20 @@ export function useRecommendation(initialRouteId = DEFAULT_ROUTE_ID) {
         setStatus('error');
         setErrorMessage(err.message || `Client Error ${err.status}`);
       } else {
-        console.warn('[useRecommendation] Backend unavailable, falling back to mockData:', err);
-        const fallbackData = getRouteData(routeId);
-        setData(fallbackData);
+        console.warn('[useRecommendation] Backend unavailable, falling back to mockData with custom adjustments:', err);
+        const baseFallback = getRouteData(routeId);
+        // Apply custom requested parcel and ports to fallback structure
+        const customFallback = {
+          ...baseFallback,
+          id: `custom-${payload.originPortId}-${payload.destinationPortId}`,
+          isCustom: true,
+          cargoType: payload.cargoType || baseFallback.cargoType,
+          cargoQuantityMT: payload.cargoQuantityMT || baseFallback.cargoQuantityMT,
+          laycanStart: payload.laycanStart || baseFallback.laycanStart,
+          laycanEnd: payload.laycanEnd || baseFallback.laycanEnd,
+          desiredArrivalDate: payload.desiredArrivalDate || baseFallback.desiredArrivalDate,
+        };
+        setData(customFallback);
         setStatus('fallback');
         setErrorMessage(err.message || 'Connected to demo fixture preset');
       }
@@ -163,6 +203,20 @@ export function useRecommendation(initialRouteId = DEFAULT_ROUTE_ID) {
       }
     };
   }, [requestPayload, activeRouteId, fetchRecommendation]);
+
+  // Explicit evaluation trigger (runs immediately on button click, cancelling debounce)
+  const evaluateCustomVoyage = useCallback((customPayload = null) => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    const payloadToUse = customPayload || requestPayload;
+    if (customPayload) {
+      setRequestPayload(customPayload);
+    }
+    const customRouteId = `custom-${payloadToUse.originPortId}-${payloadToUse.destinationPortId}`;
+    setActiveRouteId(customRouteId);
+    fetchRecommendation(payloadToUse, customRouteId);
+  }, [fetchRecommendation, requestPayload]);
 
   // Select preset route
   const selectRoute = useCallback((routeId) => {
@@ -193,14 +247,17 @@ export function useRecommendation(initialRouteId = DEFAULT_ROUTE_ID) {
   const applyScenario = useCallback((scenario) => {
     const sId = scenario.id || `${scenario.originPortId}-${scenario.destinationPortId}`;
     setActiveRouteId(sId);
-    setRequestPayload(prev => ({
-      ...prev,
-      cargoType: scenario.defaultCargoType || scenario.cargoType || prev.cargoType,
-      cargoQuantityMT: scenario.defaultCargoMT || scenario.cargoQuantityMT || prev.cargoQuantityMT,
-      originPortId: scenario.originPortId || prev.originPortId,
-      destinationPortId: scenario.destinationPortId || prev.destinationPortId,
-    }));
-  }, []);
+    const updated = {
+      ...requestPayload,
+      cargoType: scenario.defaultCargoType || scenario.cargoType || requestPayload.cargoType,
+      cargoQuantityMT: scenario.defaultCargoMT || scenario.cargoQuantityMT || requestPayload.cargoQuantityMT,
+      originPortId: scenario.originPortId || requestPayload.originPortId,
+      destinationPortId: scenario.destinationPortId || requestPayload.destinationPortId,
+    };
+    setRequestPayload(updated);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    fetchRecommendation(updated, sId);
+  }, [fetchRecommendation, requestPayload]);
 
   const refetch = useCallback(() => {
     fetchRecommendation(requestPayload, activeRouteId);
@@ -221,9 +278,10 @@ export function useRecommendation(initialRouteId = DEFAULT_ROUTE_ID) {
     loadingPorts,
     dischargePorts,
     routesList,
-    routePresets: ROUTE_PRESETS,
+    routePresets,
     selectRoute,
     updateRequest,
+    evaluateCustomVoyage,
     applyScenario,
     refetch,
   };

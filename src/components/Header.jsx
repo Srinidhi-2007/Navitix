@@ -56,20 +56,30 @@ export default function Header({ activeTab, activeRoute, onSelectRoute, routePre
           <div className="hidden lg:block h-6 w-[1px] bg-[#30454D]" />
 
           {/* Active Route Quick Switcher */}
-          <div className="hidden sm:flex items-center space-x-2 bg-[#16262D] border border-[#30454D] rounded-lg px-2.5 py-1.5 text-xs">
-            <Compass className="w-3.5 h-3.5 text-[#F47B3A]" />
-            <span className="text-[#82949A] text-[11px] font-medium uppercase font-hud">ACTIVE QUERY:</span>
+          <div className="hidden sm:flex items-center space-x-2 bg-[#16262D] border border-[#30454D] rounded-lg px-2.5 py-1.5 text-xs max-w-md">
+            <Compass className="w-3.5 h-3.5 text-[#F47B3A] shrink-0" />
+            <span className="text-[#82949A] text-[11px] font-medium uppercase font-hud shrink-0">ACTIVE QUERY:</span>
             <select
               value={activeRoute.id}
               onChange={(e) => onSelectRoute(e.target.value)}
-              className="bg-transparent text-[#DCE5E7] text-xs font-medium focus:outline-none cursor-pointer pr-2 hover:text-[#F47B3A] transition-colors"
+              className="bg-transparent text-[#DCE5E7] text-xs font-medium focus:outline-none cursor-pointer pr-1 hover:text-[#F47B3A] transition-colors truncate"
             >
               {routePresets.map(preset => (
                 <option key={preset.id} value={preset.id} className="bg-[#16262D] text-[#DCE5E7]">
-                  {preset.originFlag} {preset.cargoQuantityMT.toLocaleString()} MT {preset.cargoType} ({preset.originPort.split(' ')[0]} → {preset.destinationPort.split(' ')[0]})
+                  {preset.originFlag || '🌐'} {(preset.cargoQuantityMT || 0).toLocaleString()} MT {preset.cargoType} ({(preset.originPort || '').split(' ')[0].split('(')[0].trim()} → {(preset.destinationPort || '').split(' ')[0].split('(')[0].trim()}){preset.isCustom ? ' · [CUSTOM]' : ''}
                 </option>
               ))}
+              {!routePresets.some(p => p.id === activeRoute.id) && (
+                <option value={activeRoute.id} className="bg-[#16262D] text-[#F47B3A] font-bold">
+                  {activeRoute.originFlag || '🌐'} {(activeRoute.cargoQuantityMT || 0).toLocaleString()} MT {activeRoute.cargoType} ({(activeRoute.originPort || '').split(' ')[0].split('(')[0].trim()} → {(activeRoute.destinationPort || '').split(' ')[0].split('(')[0].trim()}) · [CUSTOM]
+                </option>
+              )}
             </select>
+            {activeRoute.isCustom && (
+              <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-[#F47B3A]/20 text-[#F47B3A] border border-[#F47B3A]/40 shrink-0">
+                CUSTOM
+              </span>
+            )}
           </div>
         </div>
 

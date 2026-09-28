@@ -31,6 +31,14 @@ export default function Sidebar({ activeTab, onSelectTab, activeRoute }) {
       badgeColor: 'text-[#4FA69A] bg-[#4FA69A]/10 border-[#4FA69A]/30'
     },
     {
+      id: 'compare-vessels',
+      label: 'Compare Vessels',
+      shortLabel: 'Compare Fleet',
+      icon: Award,
+      badge: '3 CANDIDATES',
+      badgeColor: 'text-[#DCE5E7] bg-[#20343C] border-[#30454D]'
+    },
+    {
       id: 'freight-forecast',
       label: 'Freight Forecast',
       shortLabel: 'Forecast',
@@ -53,14 +61,6 @@ export default function Sidebar({ activeTab, onSelectTab, activeRoute }) {
       icon: AlertTriangle,
       badge: `${activeRoute.riskAndConfidence.confidenceScore}% CONF`,
       badgeColor: 'text-[#4FA69A] bg-[#4FA69A]/10 border-[#4FA69A]/30'
-    },
-    {
-      id: 'compare-vessels',
-      label: 'Compare Vessels',
-      shortLabel: 'Compare Fleet',
-      icon: Award,
-      badge: '3 CANDIDATES',
-      badgeColor: 'text-[#DCE5E7] bg-[#20343C] border-[#30454D]'
     },
     {
       id: 'settings',

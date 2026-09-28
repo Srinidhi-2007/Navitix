@@ -73,6 +73,9 @@ def ensure_rates_csv(data_dir: Path = Path(".")) -> pd.DataFrame:
     """Returns a DataFrame from rates.csv, creating it if needed."""
     raw_path = data_dir / "rates_raw.csv"
     out_path = data_dir / "rates.csv"
+    if out_path.exists():
+        return pd.read_csv(out_path)
     if raw_path.exists():
         return _clean_raw(raw_path, out_path)
     return _build_synthetic(out_path)
+

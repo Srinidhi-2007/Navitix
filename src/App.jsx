@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import CharterModal from './components/CharterModal';
@@ -16,6 +16,16 @@ import { useRecommendation } from './hooks/useRecommendation';
 export default function App() {
   const [activeTab, setActiveTab] = useState('overview');
   const [isCharterModalOpen, setIsCharterModalOpen] = useState(false);
+  const mainScrollRef = useRef(null);
+
+  // Automatically scroll main content area to top whenever a new section/tab is opened
+  useEffect(() => {
+    if (mainScrollRef.current) {
+      mainScrollRef.current.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      mainScrollRef.current.scrollTop = 0;
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [activeTab]);
 
   const {
     activeRoute,
@@ -124,7 +134,7 @@ export default function App() {
       />
 
       {/* 2. Main Content Canvas */}
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto hud-grid-bg">
+      <div ref={mainScrollRef} className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto hud-grid-bg">
         {/* Backend Model Connection Status Strip */}
         <div className="w-full shrink-0">
           {isLoading && (

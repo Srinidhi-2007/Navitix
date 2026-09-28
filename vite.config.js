@@ -8,4 +8,14 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  server: {
+    watch: {
+      ignored: [
+        '**/charter-ai-backend/**',
+        '**/.venv/**',
+        '**/__pycache__/**',
+        '**/.pytest_cache/**',
+      ],
+    },
+  },
 })

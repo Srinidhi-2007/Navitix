@@ -75,9 +75,9 @@ export default function FreightForecastPage({ activeRoute, onOpenCharterModal })
 
   // Chart coordinate math
   const chartWidth = 840;
-  const chartHeight = 340;
+  const chartHeight = 360;
   const paddingX = 45;
-  const paddingY = 35;
+  const paddingY = 45;
 
   // Auto-scale chart Y axis from actual data (pad 1.5 on each side)
   const allRates = points.flatMap(p => [
@@ -437,25 +437,28 @@ export default function FreightForecastPage({ activeRoute, onOpenCharterModal })
               ${currentPoint.actualRate || currentPoint.forecastRate || 29.4}
             </text>
 
-            {/* X-axis date labels */}
+            {/* X-axis date labels — staggered to prevent overlap */}
             {points.map((p, idx) => {
               // Show key labels to avoid crowding
               const step = points.length > 20 ? 3 : 2;
-              if (idx % step !== 0 && !p.isCurrent && !(horizonTroughPoint && p.dayOffset === horizonTroughPoint.dayOffset)) return null;
-              const x = getX(idx);
               const isTrough = horizonTroughPoint && p.dayOffset === horizonTroughPoint.dayOffset;
+              if (idx % step !== 0 && !p.isCurrent && !isTrough) return null;
+              const x = getX(idx);
+              // Stagger: Today & Trough labels on a lower row to avoid collision with regular dates
+              const isSpecial = p.isCurrent || isTrough;
+              const yOffset = isSpecial ? 30 : 16;
               return (
                 <text
                   key={idx}
                   x={x}
-                  y={chartHeight - paddingY + 18}
+                  y={chartHeight - paddingY + yOffset}
                   textAnchor="middle"
                   fill={p.isCurrent ? "#DCE5E7" : isTrough ? "#F47B3A" : "#82949A"}
                   fontSize="9"
                   fontFamily="JetBrains Mono"
-                  fontWeight={p.isCurrent || isTrough ? "bold" : "normal"}
+                  fontWeight={isSpecial ? "bold" : "normal"}
                 >
-                  {p.date}
+                  {p.isCurrent ? `TODAY ${p.date}` : p.date}
                 </text>
               );
             })}

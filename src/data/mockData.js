@@ -16,10 +16,10 @@ export const ROUTE_PRESETS = [
     cargoQuantityMT: 50000,
     originPort: "Hay Point (DBCT), Australia",
     originCountry: "Australia",
-    originFlag: "🇦🇺",
+    originFlag: "AU",
     destinationPort: "Paradip Port, India",
     destinationCountry: "India",
-    destinationFlag: "🇮🇳",
+    destinationFlag: "IN",
     laycanStart: "2026-09-12",
     laycanEnd: "2026-09-16",
     desiredArrivalDate: "2026-09-28",
@@ -32,7 +32,7 @@ export const ROUTE_PRESETS = [
     heroDecision: {
       recommendedVesselId: "panamax",
       recommendedVesselName: "Panamax",
-      recommendedVesselIcon: "🚢",
+      recommendedVesselIcon: "",
       charterTimingAction: "Charter within 3–5 days",
       timingWindowDates: "Sep 9 – Sep 11, 2026",
       timingRationale: "Freight rate trajectory hits projected trough of $27.90/MT before post-monsoon demand surge",
@@ -92,7 +92,7 @@ export const ROUTE_PRESETS = [
         confidencePct: 87,
         isFeasible: true,
         isRecommended: true,
-        badgeText: "⭐ RECOMMENDED PICK",
+        badgeText: "RECOMMENDED PICK",
         feasibilityReason: "Fully compliant with loading & discharge draft, berth length, and parcel size requirements."
       },
       {
@@ -170,8 +170,8 @@ export const ROUTE_PRESETS = [
         confidencePct: 62,
         isFeasible: false,
         isRecommended: false,
-        badgeText: "❌ INFEASIBLE (DRAFT LIMIT)",
-        feasibilityReason: "❌ Capesize — Maximum permissible draft at Paradip (14.5m) would be exceeded (Capesize laden draft is 18.2m)."
+        badgeText: "INFEASIBLE (DRAFT LIMIT)",
+        feasibilityReason: "Capesize — Maximum permissible draft at Paradip (14.5m) would be exceeded (Capesize laden draft is 18.2m)."
       }
     ],
 
@@ -180,7 +180,7 @@ export const ROUTE_PRESETS = [
         id: "hay-point",
         name: "Hay Point Coal Terminal (DBCT)",
         country: "Australia",
-        flag: "🇦🇺",
+        flag: "AU",
         unlocode: "AU HPT",
         coordinates: "21°18'S, 149°18'E",
         maxDraftMeters: 19.5,
@@ -201,7 +201,7 @@ export const ROUTE_PRESETS = [
         id: "paradip",
         name: "Paradip Port Trust (Berth 1 & 2)",
         country: "India",
-        flag: "🇮🇳",
+        flag: "IN",
         unlocode: "IN PRT",
         coordinates: "20°15'N, 86°40'E",
         maxDraftMeters: 14.5,
@@ -215,7 +215,7 @@ export const ROUTE_PRESETS = [
           handysize: { feasible: true, reason: "Draft 10.5m < 14.5m limit; LOA 180m < 230m limit" },
           supramax: { feasible: true, reason: "Draft 12.8m < 14.5m limit; LOA 190m < 230m limit" },
           panamax: { feasible: true, reason: "Draft 14.2m < 14.5m limit (0.3m clearance); LOA 225m < 230m limit" },
-          capesize: { feasible: false, reason: "❌ Draft 18.2m exceeds 14.5m channel limit by 3.7m. LOA 292m exceeds 230m limit." }
+          capesize: { feasible: false, reason: "Draft 18.2m exceeds 14.5m channel limit by 3.7m. LOA 292m exceeds 230m limit." }
         }
       },
       draftComparisonChart: [
@@ -356,10 +356,10 @@ export const ROUTE_PRESETS = [
     cargoQuantityMT: 70000,
     originPort: "Port Hedland, Australia",
     originCountry: "Australia",
-    originFlag: "🇦🇺",
+    originFlag: "AU",
     destinationPort: "Qingdao Port, China",
     destinationCountry: "China",
-    destinationFlag: "🇨🇳",
+    destinationFlag: "CN",
     laycanStart: "2026-09-18",
     laycanEnd: "2026-09-22",
     desiredArrivalDate: "2026-10-02",
@@ -372,7 +372,7 @@ export const ROUTE_PRESETS = [
     heroDecision: {
       recommendedVesselId: "panamax",
       recommendedVesselName: "Panamax (Baby-Cape / Kamsarmax)",
-      recommendedVesselIcon: "🚢",
+      recommendedVesselIcon: "",
       charterTimingAction: "Charter immediately (0–2 days)",
       timingWindowDates: "Sep 07 – Sep 09, 2026",
       timingRationale: "China steel mill inventory restocking pushing spot rates up rapidly",
@@ -424,7 +424,7 @@ export const ROUTE_PRESETS = [
         confidencePct: 82,
         isFeasible: true,
         isRecommended: true,
-        badgeText: "⭐ RECOMMENDED PICK",
+        badgeText: "RECOMMENDED PICK",
         feasibilityReason: "Optimal 70k MT fit; draft clear at both Port Hedland (19m) and Qingdao (21m)."
       },
       {
@@ -441,7 +441,7 @@ export const ROUTE_PRESETS = [
         isFeasible: false,
         isRecommended: false,
         badgeText: "CAPACITY DEFICIT",
-        feasibilityReason: "❌ Supramax capacity (58,000 MT) cannot accommodate 70,000 MT lot."
+        feasibilityReason: "Supramax capacity (58,000 MT) cannot accommodate 70,000 MT lot."
       },
       {
         id: "handysize",
@@ -457,7 +457,7 @@ export const ROUTE_PRESETS = [
         isFeasible: false,
         isRecommended: false,
         badgeText: "INFEASIBLE (SPLIT 2X)",
-        feasibilityReason: "❌ Requires 2 distinct voyages."
+        feasibilityReason: "Requires 2 distinct voyages."
       },
       {
         id: "capesize",
@@ -482,7 +482,7 @@ export const ROUTE_PRESETS = [
         id: "port-hedland",
         name: "Port Hedland Inner Harbour",
         country: "Australia",
-        flag: "🇦🇺",
+        flag: "AU",
         maxDraftMeters: 19.8,
         maxLoaMeters: 330,
         berthLengthMeters: 360,
@@ -499,7 +499,7 @@ export const ROUTE_PRESETS = [
         id: "qingdao",
         name: "Qingdao Qianwan Ore Terminal",
         country: "China",
-        flag: "🇨🇳",
+        flag: "CN",
         maxDraftMeters: 21.5,
         maxLoaMeters: 350,
         berthLengthMeters: 400,
@@ -604,10 +604,10 @@ export const ROUTE_PRESETS = [
     cargoQuantityMT: 38000,
     originPort: "Port of Santos, Brazil",
     originCountry: "Brazil",
-    originFlag: "🇧🇷",
+    originFlag: "BR",
     destinationPort: "Port of Alexandria, Egypt",
     destinationCountry: "Egypt",
-    destinationFlag: "🇪🇬",
+    destinationFlag: "EG",
     laycanStart: "2026-09-25",
     laycanEnd: "2026-09-30",
     desiredArrivalDate: "2026-10-18",
@@ -620,7 +620,7 @@ export const ROUTE_PRESETS = [
     heroDecision: {
       recommendedVesselId: "supramax",
       recommendedVesselName: "Supramax (Ultramax)",
-      recommendedVesselIcon: "🚢",
+      recommendedVesselIcon: "",
       charterTimingAction: "Charter within 5–7 days",
       timingWindowDates: "Sep 11 – Sep 13, 2026",
       timingRationale: "Atlantic ballast fleet arrival expected to push grain freight down -4.2%",
@@ -668,7 +668,7 @@ export const ROUTE_PRESETS = [
         confidencePct: 76,
         isFeasible: true,
         isRecommended: true,
-        badgeText: "⭐ RECOMMENDED PICK",
+        badgeText: "RECOMMENDED PICK",
         feasibilityReason: "Geared ship suited for discharge; compliant with Alexandria 13.5m draft."
       },
       {
@@ -685,7 +685,7 @@ export const ROUTE_PRESETS = [
         isFeasible: false,
         isRecommended: false,
         badgeText: "INFEASIBLE AT ALEXANDRIA",
-        feasibilityReason: "❌ Panamax draft (14.2m) exceeds Alexandria maximum grain berth draft (13.5m)."
+        feasibilityReason: "Panamax draft (14.2m) exceeds Alexandria maximum grain berth draft (13.5m)."
       },
       {
         id: "handysize",
@@ -716,8 +716,8 @@ export const ROUTE_PRESETS = [
         confidencePct: 60,
         isFeasible: false,
         isRecommended: false,
-        badgeText: "❌ INFEASIBLE (DRAFT & SIZE)",
-        feasibilityReason: "❌ Capesize cannot berth at Alexandria; draft and LOA severely exceed limits."
+        badgeText: "INFEASIBLE (DRAFT & SIZE)",
+        feasibilityReason: "Capesize cannot berth at Alexandria; draft and LOA severely exceed limits."
       }
     ],
 
@@ -726,7 +726,7 @@ export const ROUTE_PRESETS = [
         id: "santos",
         name: "Port of Santos (Outer Basin)",
         country: "Brazil",
-        flag: "🇧🇷",
+        flag: "BR",
         maxDraftMeters: 14.5,
         maxLoaMeters: 280,
         berthLengthMeters: 310,
@@ -743,7 +743,7 @@ export const ROUTE_PRESETS = [
         id: "alexandria",
         name: "Port of Alexandria Grain Terminal",
         country: "Egypt",
-        flag: "🇪🇬",
+        flag: "EG",
         maxDraftMeters: 13.5,
         maxLoaMeters: 220,
         berthLengthMeters: 240,
@@ -752,8 +752,8 @@ export const ROUTE_PRESETS = [
         suitability: {
           handysize: { feasible: true, reason: "Compliant" },
           supramax: { feasible: true, reason: "Compliant" },
-          panamax: { feasible: false, reason: "❌ Draft 14.2m exceeds 13.5m limit" },
-          capesize: { feasible: false, reason: "❌ Draft 18.2m exceeds 13.5m limit" }
+          panamax: { feasible: false, reason: "Draft 14.2m exceeds 13.5m limit" },
+          capesize: { feasible: false, reason: "Draft 18.2m exceeds 13.5m limit" }
         }
       },
       draftComparisonChart: [
@@ -814,7 +814,7 @@ export const ROUTE_PRESETS = [
       overallRiskColor: "#D9A441",
       confidenceScore: 76,
       confidenceStatusText: "Moderate confidence — wider forecast spread due to South American soya line-up volatility.",
-      warningText: "⚠️ Forecast uncertainty is elevated (76%) due to Santos berth congestion variance — monitor daily line-ups before fixture.",
+      warningText: "Forecast uncertainty is elevated (76%) due to Santos berth congestion variance — monitor daily line-ups before fixture.",
       riskFactors: [
         { name: "Freight Volatility", level: "Medium", statusColor: "#D9A441", score: "28% Ann. Spread", detail: "South American soya season peaks" },
         { name: "Port Congestion Risk", level: "High", statusColor: "#D9573F", score: "2.3d Santos Queue", detail: "Seasonal line-up variance" },

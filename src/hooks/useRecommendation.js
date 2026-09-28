@@ -124,13 +124,13 @@ export function useRecommendation(initialRouteId = DEFAULT_ROUTE_ID) {
     const destShort = (data.destinationPort || 'Discharge').split(' ')[0].split('(')[0].trim();
     const customEntry = {
       id: data.id || `custom-${requestPayload.originPortId}-${requestPayload.destinationPortId}`,
-      label: `${data.originFlag || '🌐'} ${(data.cargoQuantityMT || requestPayload.cargoQuantityMT || 50000).toLocaleString()} MT ${data.cargoType || requestPayload.cargoType || 'Cargo'} (${originShort} → ${destShort}) [CUSTOM]`,
+      label: `${(data.cargoQuantityMT || requestPayload.cargoQuantityMT || 50000).toLocaleString()} MT ${data.cargoType || requestPayload.cargoType || 'Cargo'} (${originShort} → ${destShort}) [CUSTOM]`,
       cargoType: data.cargoType || requestPayload.cargoType,
       cargoQuantityMT: data.cargoQuantityMT || requestPayload.cargoQuantityMT,
       originPort: data.originPort || requestPayload.originPortId,
-      originFlag: data.originFlag || '🌐',
+      originFlag: data.originFlag || '',
       destinationPort: data.destinationPort || requestPayload.destinationPortId,
-      destinationFlag: data.destinationFlag || '🌐',
+      destinationFlag: data.destinationFlag || '',
       isCustom: true,
     };
     return [customEntry, ...ROUTE_PRESETS];

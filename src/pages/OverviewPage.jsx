@@ -1,4 +1,3 @@
-import React from 'react';
 import { 
   ArrowRight, 
   TrendingDown, 
@@ -11,7 +10,9 @@ import {
   CheckCircle2, 
   ChevronRight,
   ExternalLink,
-  Sliders
+  Sliders,
+  Package,
+  Ship
 } from 'lucide-react';
 
 export default function OverviewPage({ activeRoute, onOpenCharterModal, onNavigate }) {
@@ -151,7 +152,7 @@ export default function OverviewPage({ activeRoute, onOpenCharterModal, onNaviga
       <div className="bg-[#0D1A20] border border-[#30454D] rounded-xl p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shadow-md">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-lg bg-[#20343C] border border-[#30454D] flex items-center justify-center text-lg">
-            📦
+            <Package className="w-5 h-5 text-[#F47B3A]" />
           </div>
           <div>
             <div className="text-[10px] font-hud font-bold uppercase tracking-wider text-[#82949A]">
@@ -369,7 +370,7 @@ export default function OverviewPage({ activeRoute, onOpenCharterModal, onNaviga
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
                         isWinner ? 'bg-[#F47B3A] text-white' : 'bg-[#20343C] text-[#82949A]'
                       }`}>
-                        {isWinner ? '⭐' : '🚢'}
+                        {isWinner ? <Award className="w-4 h-4" /> : <Ship className="w-4 h-4" />}
                       </div>
                       <div>
                         <div className="flex items-center space-x-2">

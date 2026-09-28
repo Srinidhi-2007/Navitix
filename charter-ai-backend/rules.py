@@ -128,7 +128,7 @@ def evaluate_candidate_vessels(
         elif not is_physically_feasible:
             is_feasible = False
             feasibility_reason = dest_reason if not dest_feas else origin_reason
-            badge_text = "❌ INFEASIBLE"
+            badge_text = "INFEASIBLE"
         else:
             is_feasible = True
             feasibility_reason = "Fully compliant with loading & discharge draft, berth length, and parcel size."

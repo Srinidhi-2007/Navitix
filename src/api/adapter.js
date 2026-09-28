@@ -8,19 +8,19 @@
  */
 
 export const PORT_METADATA = {
-  "hay-point": { country: "Australia", flag: "🇦🇺", unlocode: "AU HPT", coordinates: "21°18'S, 149°18'E" },
-  "paradip": { country: "India", flag: "🇮🇳", unlocode: "IN PRT", coordinates: "20°15'N, 86°40'E" },
-  "port-hedland": { country: "Australia", flag: "🇦🇺", unlocode: "AU PHE", coordinates: "20°18'S, 118°34'E" },
-  "qingdao": { country: "China", flag: "🇨🇳", unlocode: "CN TAO", coordinates: "36°04'N, 120°19'E" },
-  "santos": { country: "Brazil", flag: "🇧🇷", unlocode: "BR SSZ", coordinates: "23°57'S, 46°18'W" },
-  "alexandria": { country: "Egypt", flag: "🇪🇬", unlocode: "EG ALY", coordinates: "31°11'N, 29°52'E" },
+  "hay-point": { country: "Australia", flag: "AU", unlocode: "AU HPT", coordinates: "21°18'S, 149°18'E" },
+  "paradip": { country: "India", flag: "IN", unlocode: "IN PRT", coordinates: "20°15'N, 86°40'E" },
+  "port-hedland": { country: "Australia", flag: "AU", unlocode: "AU PHE", coordinates: "20°18'S, 118°34'E" },
+  "qingdao": { country: "China", flag: "CN", unlocode: "CN TAO", coordinates: "36°04'N, 120°19'E" },
+  "santos": { country: "Brazil", flag: "BR", unlocode: "BR SSZ", coordinates: "23°57'S, 46°18'W" },
+  "alexandria": { country: "Egypt", flag: "EG", unlocode: "EG ALY", coordinates: "31°11'N, 29°52'E" },
 };
 
 export const VESSEL_ICONS = {
-  "handysize": "🚢",
-  "supramax": "🚢",
-  "panamax": "🚢",
-  "capesize": "🛳️",
+  "handysize": "",
+  "supramax": "",
+  "panamax": "",
+  "capesize": "",
 };
 
 export function adaptBackendResponse(backendData, requestPayload = {}) {
@@ -29,11 +29,11 @@ export function adaptBackendResponse(backendData, requestPayload = {}) {
   const originId = requestPayload.originPortId || backendData.portConstraints?.loadingPort?.id || "hay-point";
   const destId = requestPayload.destinationPortId || backendData.portConstraints?.dischargePort?.id || "paradip";
 
-  const originMeta = PORT_METADATA[originId] || { country: "International", flag: "🌐" };
-  const destMeta = PORT_METADATA[destId] || { country: "International", flag: "🌐" };
+  const originMeta = PORT_METADATA[originId] || { country: "International", flag: "INTL" };
+  const destMeta = PORT_METADATA[destId] || { country: "International", flag: "INTL" };
 
   const recVesselId = backendData.heroDecision?.recommendedVesselId || "panamax";
-  const vesselIcon = VESSEL_ICONS[recVesselId] || "🚢";
+  const vesselIcon = VESSEL_ICONS[recVesselId] || "";
 
   return {
     ...backendData,

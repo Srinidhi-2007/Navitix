@@ -29,7 +29,7 @@ function createCustomPin(color, label, flag) {
     html: `
       <div style="position: relative; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%);">
         <div style="background: rgba(7, 16, 20, 0.9); border: 1.5px solid ${color}; color: #DCE5E7; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; white-space: nowrap; box-shadow: 0 0 10px ${color}66; margin-bottom: 3px; display: flex; align-items: center; gap: 4px;">
-          <span>${flag || '⚓'}</span>
+          <span>${flag || 'PORT'}</span>
           <span>${label}</span>
         </div>
         <div style="width: 14px; height: 14px; border-radius: 50%; background: ${color}; border: 2px solid #FFFFFF; box-shadow: 0 0 12px ${color};"></div>
@@ -92,8 +92,8 @@ export default function RouteMap({ activeRoute, portsList = [] }) {
   const loadingPort = activeRoute?.portConstraints?.loadingPort || {};
   const dischargePort = activeRoute?.portConstraints?.dischargePort || {};
 
-  const originIcon = useMemo(() => createCustomPin('#4FA69A', 'LOAD PORT', activeRoute?.originFlag || '🇦🇺'), [activeRoute?.originFlag]);
-  const destIcon = useMemo(() => createCustomPin('#F47B3A', 'DISCHARGE', activeRoute?.destinationFlag || '🇮🇳'), [activeRoute?.destinationFlag]);
+  const originIcon = useMemo(() => createCustomPin('#4FA69A', 'LOAD PORT', activeRoute?.originFlag || 'AU'), [activeRoute?.originFlag]);
+  const destIcon = useMemo(() => createCustomPin('#F47B3A', 'DISCHARGE', activeRoute?.destinationFlag || 'IN'), [activeRoute?.destinationFlag]);
 
   const polylinePositions = [
     [origin.lat, origin.lon],
@@ -161,7 +161,7 @@ export default function RouteMap({ activeRoute, portsList = [] }) {
             <Popup className="custom-hud-popup">
               <div className="p-1 space-y-1.5 font-sans text-[#DCE5E7] text-xs">
                 <div className="font-hud font-bold text-sm text-white uppercase flex items-center gap-1.5 border-b border-[#30454D] pb-1">
-                  <span>⚓</span>
+                  <Anchor className="w-4 h-4" />
                   <span>{origin.name}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] font-mono">
@@ -188,7 +188,7 @@ export default function RouteMap({ activeRoute, portsList = [] }) {
             <Popup className="custom-hud-popup">
               <div className="p-1 space-y-1.5 font-sans text-[#DCE5E7] text-xs">
                 <div className="font-hud font-bold text-sm text-white uppercase flex items-center gap-1.5 border-b border-[#30454D] pb-1">
-                  <span>📍</span>
+                  <Navigation className="w-4 h-4" />
                   <span>{dest.name}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] font-mono">

@@ -364,7 +364,7 @@ export default function VesselRoutePage({
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-2xl">🚢</span>
+                    <Ship className="w-6 h-6 text-[#4FA69A]" />
                     <div className="flex items-center space-x-1.5">
                       {isRec ? (
                         <span className="text-xs font-mono-num font-bold text-[#F47B3A] bg-[#F47B3A]/15 border border-[#F47B3A]/40 px-2 py-0.5 rounded">
@@ -430,7 +430,7 @@ export default function VesselRoutePage({
                 ORIGIN HARBOUR SPECIFICATIONS
               </span>
               <h3 className="font-hud font-bold text-base text-white tracking-wide uppercase flex items-center space-x-2 mt-0.5">
-                <span>{loadingPort.flag || '🇦🇺'}</span>
+                <span>{loadingPort.flag || 'AU'}</span>
                 <span>{loadingPort.name || activeRoute.originPort}</span>
               </h3>
               <p className="text-[11px] font-mono-num text-[#82949A]">
@@ -494,7 +494,7 @@ export default function VesselRoutePage({
                 DESTINATION HARBOUR SPECIFICATIONS (RESTRICTIVE)
               </span>
               <h3 className="font-hud font-bold text-base text-white tracking-wide uppercase flex items-center space-x-2 mt-0.5">
-                <span>{dischargePort.flag || '🇮🇳'}</span>
+                <span>{dischargePort.flag || 'IN'}</span>
                 <span>{dischargePort.name || activeRoute.destinationPort}</span>
               </h3>
               <p className="text-[11px] font-mono-num text-[#82949A]">

@@ -7,7 +7,8 @@ import {
   CheckCircle2, 
   TrendingDown, 
   Info,
-  ShieldCheck
+  ShieldCheck,
+  Ship
 } from 'lucide-react';
 
 export default function CostAnalysisPage({ activeRoute, onOpenCharterModal }) {
@@ -55,7 +56,7 @@ export default function CostAnalysisPage({ activeRoute, onOpenCharterModal }) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-[#30454D] pb-4">
           <div className="flex items-center space-x-3">
             <div className="w-9 h-9 rounded-lg bg-[#F47B3A] text-white flex items-center justify-center font-bold text-base">
-              🚢
+              <Ship className="w-5 h-5 text-white" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
@@ -167,7 +168,7 @@ export default function CostAnalysisPage({ activeRoute, onOpenCharterModal }) {
               <tr className="border-b border-[#30454D] text-[11px] font-hud uppercase tracking-wider text-[#82949A]">
                 <th className="py-3 px-4">EXPENSE COMPONENT</th>
                 <th className="py-3 px-4 bg-[#F47B3A]/10 text-[#F47B3A] border-x border-[#F47B3A]/30">
-                  ⭐ {heroDecision.recommendedVesselName?.split(' /')[0].toUpperCase()} (RECOMMENDED)
+                  <Award className="w-3.5 h-3.5 inline mr-1" /> {heroDecision.recommendedVesselName?.split(' /')[0].toUpperCase()} (RECOMMENDED)
                 </th>
                 <th className="py-3 px-4">SUPRAMAX</th>
                 <th className="py-3 px-4">HANDYSIZE (2X SPLIT)</th>
@@ -270,7 +271,7 @@ export default function CostAnalysisPage({ activeRoute, onOpenCharterModal }) {
                     return (
                       <tr key={idx} className={isRec ? 'bg-[#F47B3A]/10 text-white font-bold' : 'text-[#82949A]'}>
                         <td className="p-2.5 flex items-center space-x-1.5">
-                          {isRec && <span>⭐</span>}
+                          {isRec && <span><Award className="w-3.5 h-3.5 inline" /></span>}
                           <span>{row.vessel}</span>
                         </td>
                         <td className="p-2.5">{row.loadingDays}d</td>

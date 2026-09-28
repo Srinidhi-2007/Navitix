@@ -159,7 +159,7 @@
         "confidencePct": 87,
         "isFeasible": true,
         "isRecommended": true,
-        "badgeText": "⭐ RECOMMENDED PICK",
+        "badgeText": "RECOMMENDED PICK",
         "feasibilityReason": "Fully compliant with loading & discharge draft, berth length, and parcel size."
       },
       {
@@ -249,7 +249,7 @@
         "confidencePct": 62,
         "isFeasible": false,
         "isRecommended": false,
-        "badgeText": "❌ INFEASIBLE",
+        "badgeText": "INFEASIBLE",
         "feasibilityReason": "string — reason comes from the berth-level rule engine"
       }
     ],

@@ -195,10 +195,10 @@ def recommend(request: Dict[str, Any], data_dir: str = ".") -> Dict[str, Any]:
         c["confidencePct"] = fc["confidencePct"]
 
         if is_rec:
-            c["badgeText"] = "⭐ RECOMMENDED PICK"
+            c["badgeText"] = "RECOMMENDED PICK"
             c["riskLevel"] = "Low"
         elif not c.get("isFeasible"):
-            c["badgeText"] = "❌ INFEASIBLE"
+            c["badgeText"] = "INFEASIBLE"
             c["riskLevel"] = "High"
         elif c["voyageCount"] > 1:
             c["badgeText"] = "UNECONOMICAL (SPLIT PARCEL)"

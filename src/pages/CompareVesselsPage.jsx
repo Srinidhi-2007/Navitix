@@ -7,7 +7,9 @@ import {
   ShieldCheck, 
   AlertTriangle,
   Zap,
-  Info
+  Info,
+  Ship,
+  Anchor
 } from 'lucide-react';
 
 export default function CompareVesselsPage({ activeRoute, onOpenCharterModal }) {
@@ -58,7 +60,7 @@ export default function CompareVesselsPage({ activeRoute, onOpenCharterModal }) 
                 <div className="flex items-center justify-between mb-4">
                   {isWinner ? (
                     <span className="flex items-center space-x-1.5 px-3 py-1 rounded bg-[#F47B3A] text-white text-xs font-hud font-bold tracking-wider uppercase shadow-md shadow-[#F47B3A]/30">
-                      <span>⭐</span>
+                      <Award className="w-3.5 h-3.5" />
                       <span>SYSTEM'S PICK</span>
                     </span>
                   ) : (
@@ -67,9 +69,11 @@ export default function CompareVesselsPage({ activeRoute, onOpenCharterModal }) 
                     </span>
                   )}
 
-                  <span className="text-2xl">
-                    {isWinner ? '🚢' : '⚓'}
-                  </span>
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                    isWinner ? 'bg-[#F47B3A]/20 text-[#F47B3A]' : 'bg-[#20343C] text-[#82949A]'
+                  }`}>
+                    {isWinner ? <Ship className="w-4 h-4" /> : <Anchor className="w-4 h-4" />}
+                  </div>
                 </div>
 
                 <div className="space-y-1">

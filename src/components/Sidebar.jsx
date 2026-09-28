@@ -116,16 +116,9 @@ export default function Sidebar({ activeTab, onSelectTab, activeRoute }) {
                   }`}
                 />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <span className={`text-xs font-medium tracking-wide ${isActive ? 'text-[#DCE5E7] font-semibold' : ''}`}>
-                      {item.shortLabel}
-                    </span>
-                    {item.badge && (
-                      <span className={`text-[9px] font-mono-num uppercase px-1.5 py-0.5 rounded border ${item.badgeColor}`}>
-                        {item.badge}
-                      </span>
-                    )}
-                  </div>
+                  <span className={`text-xs font-medium tracking-wide block ${isActive ? 'text-[#DCE5E7] font-semibold' : ''}`}>
+                    {item.shortLabel}
+                  </span>
                   <p className="text-[11px] text-[#82949A] truncate mt-0.5">
                     {item.label}
                   </p>

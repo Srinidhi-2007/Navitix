@@ -105,13 +105,13 @@ export function useRecommendation(initialRouteId = DEFAULT_ROUTE_ID) {
     };
   }, []);
 
-  // Filter ports by role (with graceful fallbacks)
+  // All ports from the database available for selection as loading or discharge ports
   const loadingPorts = useMemo(() => {
-    return portsList.filter(p => p.role === 'load' || p.role === 'both' || !p.role);
+    return portsList && portsList.length > 0 ? portsList : FALLBACK_PORTS;
   }, [portsList]);
 
   const dischargePorts = useMemo(() => {
-    return portsList.filter(p => p.role === 'discharge' || p.role === 'both' || !p.role);
+    return portsList && portsList.length > 0 ? portsList : FALLBACK_PORTS;
   }, [portsList]);
 
   // Dynamic route presets including any active custom query

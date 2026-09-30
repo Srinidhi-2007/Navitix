@@ -178,39 +178,44 @@ export default function CostAnalysisPage({ activeRoute, onOpenCharterModal }) {
             <tbody className="divide-y divide-[#30454D]/60 text-xs font-mono-num">
               {costAnalysis.comparisonMatrix.map((row, idx) => {
                 const isTotal = row.isTotal;
+                const isMeta = row.isMetadata;
                 return (
                   <tr
                     key={idx}
                     className={`transition-colors ${
                       isTotal
                         ? 'bg-[#20343C]/80 font-bold text-white text-sm border-t-2 border-[#F47B3A]'
+                        : isMeta
+                        ? 'bg-[#16262D]/40 text-[#4FA69A]'
                         : 'hover:bg-[#16262D]/60 text-[#DCE5E7]'
                     }`}
                   >
-                    <td className={`py-3.5 px-4 ${isTotal ? 'font-hud uppercase tracking-wider text-[#F47B3A]' : ''}`}>
+                    <td className={`py-3.5 px-4 ${isTotal ? 'font-hud uppercase tracking-wider text-[#F47B3A]' : isMeta ? 'font-hud uppercase tracking-wider text-[11px]' : ''}`}>
                       {row.item}
                     </td>
                     <td className={`py-3.5 px-4 bg-[#F47B3A]/10 border-x border-[#F47B3A]/30 ${
                       isTotal ? 'text-[#F47B3A] font-extrabold text-base' : 'text-white'
                     }`}>
-                      {activeCurrency === 'INR' ? `₹${row.panamax.toFixed(2)} Cr` : `$${(row.panamax * 0.12).toFixed(2)}M`}
+                      {isMeta ? row.panamax : (typeof row.panamax === 'number' ? (activeCurrency === 'INR' ? `₹${row.panamax.toFixed(2)} Cr` : `$${(row.panamax * 0.12).toFixed(2)}M`) : row.panamax)}
                     </td>
                     <td className="py-3.5 px-4 text-[#82949A]">
-                      {activeCurrency === 'INR' ? `₹${row.supramax.toFixed(2)} Cr` : `$${(row.supramax * 0.12).toFixed(2)}M`}
+                      {isMeta ? row.supramax : (typeof row.supramax === 'number' ? (activeCurrency === 'INR' ? `₹${row.supramax.toFixed(2)} Cr` : `$${(row.supramax * 0.12).toFixed(2)}M`) : row.supramax)}
                     </td>
                     <td className="py-3.5 px-4 text-[#82949A]">
-                      {activeCurrency === 'INR' ? `₹${row.handysize.toFixed(2)} Cr` : `$${(row.handysize * 0.12).toFixed(2)}M`}
+                      {isMeta ? row.handysize : (typeof row.handysize === 'number' ? (activeCurrency === 'INR' ? `₹${row.handysize.toFixed(2)} Cr` : `$${(row.handysize * 0.12).toFixed(2)}M`) : row.handysize)}
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       {isTotal ? (
                         <span className="text-[#4FA69A] font-bold">
-                          {row.supramax !== undefined && row.panamax !== undefined
+                          {typeof row.supramax === 'number' && typeof row.panamax === 'number'
                             ? `-₹${(row.supramax - row.panamax).toFixed(2)} Cr (-${((row.supramax - row.panamax) / row.supramax * 100).toFixed(1)}%)`
                             : '—'}
                         </span>
+                      ) : isMeta ? (
+                        <span className="text-[10px] text-[#82949A] font-hud uppercase">COST BASIS</span>
                       ) : (
                         <span className="text-[#82949A] text-[11px]">
-                          {row.panamax < row.supramax ? 'Lowest' : 'Standard'}
+                          {typeof row.panamax === 'number' && typeof row.supramax === 'number' && row.panamax < row.supramax ? 'Lowest' : 'Standard'}
                         </span>
                       )}
                     </td>

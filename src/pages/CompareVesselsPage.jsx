@@ -113,14 +113,36 @@ export default function CompareVesselsPage({ activeRoute, onOpenCharterModal }) 
                     </div>
                   </div>
 
+                  {/* 2b. Voyages Required */}
+                  <div className="flex items-center justify-between pt-3">
+                    <span className="text-[#82949A] font-hud uppercase tracking-wider text-[11px]">
+                      VOYAGES REQUIRED
+                    </span>
+                    <span className={`text-sm font-bold ${(vessel.voyageCount || 1) > 1 ? 'text-[#D9A441]' : 'text-white'}`}>
+                      {vessel.voyageCount || 1}{(vessel.voyageCount || 1) > 1 ? ' (split parcel)' : ''}
+                    </span>
+                  </div>
+
+                  {/* 2c. Cost Basis (explains how freight $ reconciles with total) */}
+                  {vessel.costBasis && (
+                    <div className="pt-3">
+                      <span className="text-[#82949A] font-hud uppercase tracking-wider text-[11px] block mb-1">
+                        COST BASIS
+                      </span>
+                      <span className="text-[11px] text-[#4FA69A] leading-relaxed block">
+                        {vessel.costBasis}
+                      </span>
+                    </div>
+                  )}
+
                   {/* 3. Waiting */}
                   <div className="flex items-center justify-between pt-3">
                     <span className="text-[#82949A] font-hud uppercase tracking-wider text-[11px]">
-                      PORT WAITING
+                      PORT WAITING{(vessel.voyageCount || 1) > 1 ? ` (×${vessel.voyageCount} voyages)` : ''}
                     </span>
                     <div className="text-right">
                       <span className="text-sm font-bold text-white">
-                        {vessel.waitingDays?.total ?? vessel.waitingDays ?? 3.2} Days
+                        {vessel.waitingDays?.total ?? vessel.waitingDays ?? 3.2} Days{(vessel.voyageCount || 1) > 1 ? ' / voyage' : ''}
                       </span>
                       {typeof vessel.waitingDays === 'object' && (
                         <span className="text-[10px] text-[#82949A] block">

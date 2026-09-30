@@ -36,8 +36,8 @@ export const ROUTE_PRESETS = [
       charterTimingAction: "Charter within 3–5 days",
       timingWindowDates: "Sep 9 – Sep 11, 2026",
       timingRationale: "Freight rate trajectory hits projected trough of $27.90/MT before post-monsoon demand surge",
-      expectedTotalCostCr: 14.22,
-      expectedTotalCostUSD: 1710000,
+      expectedTotalCostCr: 14.21,
+      expectedTotalCostUSD: 1709000,
       riskLevel: "Low",
       riskColor: "teal",
       forecastConfidencePct: 87,
@@ -47,7 +47,7 @@ export const ROUTE_PRESETS = [
     kpis: [
       { id: "freight", label: "EXPECTED FREIGHT", value: "$28.50", subtext: "per Metric Ton", trend: "-5.1%", trendFavorable: true },
       { id: "waiting", label: "EXPECTED WAITING", value: "3.2", unit: "days", subtext: "1.4d Load / 1.8d Disch", trend: "-0.6d", trendFavorable: true },
-      { id: "totalCost", label: "TOTAL COST", value: "₹14.22", unit: "Cr", subtext: "$1.71M USD equiv", trend: "Lowest in class", trendFavorable: true },
+      { id: "totalCost", label: "TOTAL COST", value: "₹14.21", unit: "Cr", subtext: "$1.71M USD equiv", trend: "Lowest in class", trendFavorable: true },
       { id: "confidence", label: "FORECAST CONFIDENCE", value: "87%", subtext: "Ensemble high certainty", trend: "+5% vs 3d ago", trendFavorable: true },
       { id: "risk", label: "RISK LEVEL", value: "LOW", subtext: "All 4 factors compliant", status: "low" }
     ],
@@ -75,6 +75,9 @@ export const ROUTE_PRESETS = [
         classCategory: "Dry Bulk · Gearless / Geared",
         capacityMT: 75000,
         cargoCarriedMT: 50000,
+        voyageCount: 1,
+        billableMT: 50000, // cargo > 60% capacity (45,000), so billable = cargo
+        costBasis: "1 voyage × 50,000 MT @ $28.50/MT",
         draftMeters: 14.2,
         beamMeters: 32.2,
         loaMeters: 225,
@@ -82,11 +85,11 @@ export const ROUTE_PRESETS = [
         freightRatePerMT: 28.50,
         waitingDays: { loading: 1.4, discharge: 1.8, total: 3.2 },
         costBreakdownCr: {
-          freight: 11.88,
+          freight: 11.86,   // 28.50 × 50,000 = $1,425,000 × 83.2 / 1e7
           waitingDemurrage: 1.34,
           bunkerFuel: 0.72,
-          portCanalMisc: 0.28,
-          total: 14.22
+          portCanalMisc: 0.29,
+          total: 14.21
         },
         riskLevel: "Low",
         confidencePct: 87,
@@ -101,6 +104,9 @@ export const ROUTE_PRESETS = [
         classCategory: "Dry Bulk · Geared & Grab",
         capacityMT: 58000,
         cargoCarriedMT: 50000,
+        voyageCount: 1,
+        billableMT: 50000, // cargo > 60% capacity (34,800), so billable = cargo
+        costBasis: "1 voyage × 50,000 MT @ $32.10/MT",
         draftMeters: 12.8,
         beamMeters: 32.2,
         loaMeters: 190,
@@ -108,25 +114,28 @@ export const ROUTE_PRESETS = [
         freightRatePerMT: 32.10,
         waitingDays: { loading: 1.2, discharge: 1.5, total: 2.7 },
         costBreakdownCr: {
-          freight: 13.38,
+          freight: 13.35,   // 32.10 × 50,000 = $1,605,000 × 83.2 / 1e7
           waitingDemurrage: 1.13,
           bunkerFuel: 0.81,
           portCanalMisc: 0.25,
-          total: 15.57
+          total: 15.54
         },
         riskLevel: "Low",
         confidencePct: 84,
         isFeasible: true,
         isRecommended: false,
         badgeText: "HIGHER FREIGHT $/MT",
-        feasibilityReason: "Feasible and self-discharging, but higher $/MT rate leads to +₹1.35 Cr voyage premium."
+        feasibilityReason: "Feasible and self-discharging, but higher $/MT rate leads to +₹1.33 Cr voyage premium."
       },
       {
         id: "handysize",
         name: "Handysize",
         classCategory: "Dry Bulk · Geared",
         capacityMT: 35000,
-        cargoCarriedMT: 35000, // parcel limit / split required
+        cargoCarriedMT: 25000, // 50,000 MT split into 2 voyages of 25,000 MT each
+        voyageCount: 2,
+        billableMT: 25000, // per voyage: cargo/2 = 25,000 > 60% × 35,000 (21,000), so billable = 25,000
+        costBasis: "2 voyages × 25,000 MT @ $37.80/MT (split parcel — capacity 35,000 MT per voyage)",
         draftMeters: 10.5,
         beamMeters: 28.4,
         loaMeters: 180,
@@ -134,18 +143,18 @@ export const ROUTE_PRESETS = [
         freightRatePerMT: 37.80,
         waitingDays: { loading: 0.9, discharge: 1.2, total: 2.1 },
         costBreakdownCr: {
-          freight: 15.76,
-          waitingDemurrage: 0.88,
-          bunkerFuel: 0.95,
-          portCanalMisc: 0.32,
-          total: 17.91
+          freight: 15.72,   // 37.80 × 25,000 × 2 = $1,890,000 × 83.2 / 1e7
+          waitingDemurrage: 1.76,  // 2 voyages × 2.1 days × $5,000/day × 83.2 / 1e7
+          bunkerFuel: 1.90,  // 2 voyages doubles fuel cost
+          portCanalMisc: 0.42,  // 2 × $25,000
+          total: 19.80
         },
         riskLevel: "Medium",
         confidencePct: 79,
         isFeasible: true,
         isRecommended: false,
-        badgeText: "UNECONOMICAL (SPLIT PARCEL)",
-        feasibilityReason: "Single vessel capacity (35,000 MT) is insufficient for 50,000 MT order without 2-shipment split."
+        badgeText: "UNECONOMICAL (2× SPLIT PARCEL)",
+        feasibilityReason: "Single vessel capacity (35,000 MT) is insufficient for 50,000 MT order — requires 2 voyages, doubling demurrage, bunker, and port costs."
       },
       {
         id: "capesize",
@@ -153,6 +162,9 @@ export const ROUTE_PRESETS = [
         classCategory: "Dry Bulk · Gearless Deep-Draft",
         capacityMT: 180000,
         cargoCarriedMT: 50000,
+        voyageCount: 1,
+        billableMT: 108000, // dead freight: max(50,000, 60% × 180,000) = 108,000 MT
+        costBasis: "1 voyage × 108,000 MT billed @ $22.40/MT (dead freight penalty: only 50k MT loaded on 180k MT vessel, charterer pays for 60% min utilization)",
         draftMeters: 18.2,
         beamMeters: 45.0,
         loaMeters: 292,
@@ -160,18 +172,18 @@ export const ROUTE_PRESETS = [
         freightRatePerMT: 22.40,
         waitingDays: { loading: 2.1, discharge: 3.8, total: 5.9 },
         costBreakdownCr: {
-          freight: 9.35,
+          freight: 20.13,   // 22.40 × 108,000 (billable) = $2,419,200 × 83.2 / 1e7 — dead freight penalty
           waitingDemurrage: 2.45,
           bunkerFuel: 1.20,
-          portCanalMisc: 0.40,
-          total: 13.40
+          portCanalMisc: 0.42,
+          total: 24.20
         },
         riskLevel: "High",
         confidencePct: 62,
         isFeasible: false,
         isRecommended: false,
-        badgeText: "INFEASIBLE (DRAFT LIMIT)",
-        feasibilityReason: "Capesize — Maximum permissible draft at Paradip (14.5m) would be exceeded (Capesize laden draft is 18.2m)."
+        badgeText: "INFEASIBLE (DRAFT + DEAD FREIGHT)",
+        feasibilityReason: "Capesize draft (18.2m) exceeds Paradip limit (14.5m). Additionally, dead freight penalty: only 50k MT on a 180k MT vessel means charterer pays for minimum 108,000 MT."
       }
     ],
 
@@ -262,24 +274,26 @@ export const ROUTE_PRESETS = [
 
     costAnalysis: {
       unitCurrency: "₹ Cr",
-      totalCostRecommended: 14.22,
+      totalCostRecommended: 14.21,
       recommendedItemized: [
-        { label: "Ocean Freight", amountCr: 11.88, pct: 83.5, color: "#F47B3A", note: "50,000 MT @ $28.50/MT" },
-        { label: "Port Waiting / Demurrage", amountCr: 1.34, pct: 9.4, color: "#D9A441", note: "3.2 days @ $5,000/day daily demurrage" },
-        { label: "Bunker Fuel (VLSFO)", amountCr: 0.72, pct: 5.1, color: "#4FA69A", note: "Voyage fuel consumption allocation" },
-        { label: "Port Dues & Agency Misc", amountCr: 0.28, pct: 2.0, color: "#82949A", note: "Pilotage, tugs, line handling, customs" }
+        { label: "Ocean Freight", amountCr: 11.86, pct: 83.5, color: "#F47B3A", note: "1 voyage × 50,000 MT @ $28.50/MT = $1.43M" },
+        { label: "Port Waiting / Demurrage", amountCr: 1.34, pct: 9.4, color: "#D9A441", note: "1 voyage × 3.2 days @ $5,000/day" },
+        { label: "Bunker Fuel (VLSFO)", amountCr: 0.72, pct: 5.1, color: "#4FA69A", note: "13.8 sea days × ~30 MT/day @ $620/MT" },
+        { label: "Port Dues & Agency Misc", amountCr: 0.29, pct: 2.0, color: "#82949A", note: "Pilotage, tugs, line handling, customs" }
       ],
       comparisonMatrix: [
-        { item: "Ocean Freight", panamax: 11.88, supramax: 13.38, handysize: 15.76 },
-        { item: "Port Waiting / Demurrage", panamax: 1.34, supramax: 1.13, handysize: 0.88 },
-        { item: "Bunker Fuel", panamax: 0.72, supramax: 0.81, handysize: 0.95 },
-        { item: "Port Dues & Misc", panamax: 0.28, supramax: 0.25, handysize: 0.32 },
-        { item: "Total Voyage Cost", panamax: 14.22, supramax: 15.57, handysize: 17.91, isTotal: true }
+        { item: "Voyages Required", panamax: "1", supramax: "1", handysize: "2", isMetadata: true },
+        { item: "Billable MT (incl. dead freight)", panamax: "50,000", supramax: "50,000", handysize: "2 × 25,000", isMetadata: true },
+        { item: "Ocean Freight", panamax: 11.86, supramax: 13.35, handysize: 15.72 },
+        { item: "Port Waiting / Demurrage", panamax: 1.34, supramax: 1.13, handysize: 1.76 },
+        { item: "Bunker Fuel", panamax: 0.72, supramax: 0.81, handysize: 1.90 },
+        { item: "Port Dues & Misc", panamax: 0.29, supramax: 0.25, handysize: 0.42 },
+        { item: "Total Voyage Cost", panamax: 14.21, supramax: 15.54, handysize: 19.80, isTotal: true }
       ],
       waitingTimeBreakdown: [
-        { vessel: "Panamax", loadingDays: 1.4, dischargeDays: 1.8, totalDays: 3.2, costCr: 1.34, status: "Recommended" },
-        { vessel: "Supramax", loadingDays: 1.2, dischargeDays: 1.5, totalDays: 2.7, costCr: 1.13, status: "Higher Freight" },
-        { vessel: "Handysize", loadingDays: 0.9, dischargeDays: 1.2, totalDays: 2.1, costCr: 0.88, status: "Split Parcel" }
+        { vessel: "Panamax", loadingDays: 1.4, dischargeDays: 1.8, totalDays: 3.2, costCr: 1.34, voyages: 1, status: "Recommended" },
+        { vessel: "Supramax", loadingDays: 1.2, dischargeDays: 1.5, totalDays: 2.7, costCr: 1.13, voyages: 1, status: "Higher Freight" },
+        { vessel: "Handysize (2×)", loadingDays: 0.9, dischargeDays: 1.2, totalDays: 2.1, costCr: 1.76, voyages: 2, status: "2× Split Parcel" }
       ]
     },
 
@@ -315,7 +329,7 @@ export const ROUTE_PRESETS = [
           freightAssumption: "Fixture completed within recommended 3–5 day window",
           waitingDays: "3.2 Days",
           waitingAssumption: "Standard line-up delay at Hay Point (1.4d) and Paradip (1.8d)",
-          totalCostCr: "₹14.22 Cr",
+          totalCostCr: "₹14.21 Cr",
           costDelta: "Baseline Reference",
           color: "#F47B3A",
           probability: "60% Probability",

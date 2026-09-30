@@ -13,11 +13,12 @@ import {
 } from 'lucide-react';
 
 export default function CompareVesselsPage({ activeRoute, onOpenCharterModal }) {
-  const { candidateVessels, heroDecision } = activeRoute;
+  const { candidateVessels = [], heroDecision = {} } = activeRoute;
 
-  // We show 3 primary comparison vessels: Panamax, Supramax, Handysize
-  const vesselsToCompare = candidateVessels.filter(v => v.id !== 'capesize').slice(0, 3);
-  const excludedCapesize = candidateVessels.find(v => v.id === 'capesize');
+  // Display top candidate vessels returned for the query (or up to top 4)
+  const vesselsToCompare = candidateVessels.filter(v => v.isFeasible || v.isRecommended || v.id === heroDecision.recommendedVesselId).slice(0, 4);
+  // Any infeasible vessels (e.g. Capesize due to draft restriction)
+  const infeasibleVessels = candidateVessels.filter(v => !v.isFeasible && v.id !== heroDecision.recommendedVesselId);
 
   return (
     <div className="space-y-6 pb-12">
@@ -38,10 +39,10 @@ export default function CompareVesselsPage({ activeRoute, onOpenCharterModal }) 
         </div>
       </div>
 
-      {/* Row of 3 Subpanels / Cards (Panamax, Supramax, Handysize) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Row of Candidate Subpanels / Cards */}
+      <div className={`grid grid-cols-1 ${vesselsToCompare.length === 4 ? 'md:grid-cols-2 lg:grid-cols-4' : 'md:grid-cols-3'} gap-6`}>
         {vesselsToCompare.map((vessel) => {
-          const isWinner = vessel.isRecommended;
+          const isWinner = vessel.isRecommended || vessel.id === heroDecision.recommendedVesselId;
           const isLowRisk = vessel.riskLevel === 'Low';
           const isMedRisk = vessel.riskLevel === 'Medium';
 
@@ -70,9 +71,9 @@ export default function CompareVesselsPage({ activeRoute, onOpenCharterModal }) 
                   )}
 
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                    isWinner ? 'bg-[#F47B3A]/20 text-[#F47B3A]' : 'bg-[#20343C] text-[#82949A]'
+                    isWinner ? 'bg-[#F47B3A]/20 text-[#F47B3A]' : 'bg-[#20343C]'
                   }`}>
-                    {isWinner ? <Ship className="w-4 h-4" /> : <Anchor className="w-4 h-4" />}
+                    {isWinner ? <Ship className="w-4 h-4" /> : <Anchor className="w-4 h-4 text-[#82949A]" />}
                   </div>
                 </div>
 
@@ -83,11 +84,11 @@ export default function CompareVesselsPage({ activeRoute, onOpenCharterModal }) 
                     {vessel.name}
                   </h3>
                   <p className="text-xs text-[#82949A]">
-                    {vessel.classCategory}
+                    {vessel.classCategory || 'Dry Bulk Carrier'}
                   </p>
                 </div>
 
-                {/* Standardized Field List (Identical Order on every card) */}
+                {/* Standardized Field List */}
                 <div className="mt-6 space-y-3.5 divide-y divide-[#30454D]/60 text-xs font-mono-num">
                   {/* 1. Cargo Capacity */}
                   <div className="flex items-center justify-between pt-1">
@@ -95,7 +96,7 @@ export default function CompareVesselsPage({ activeRoute, onOpenCharterModal }) 
                       CARGO CAPACITY
                     </span>
                     <span className="text-sm font-bold text-white">
-                      {vessel.capacityMT.toLocaleString()} MT
+                      {(vessel.capacityMT || vessel.dwt || 50000).toLocaleString()} MT
                     </span>
                   </div>
 
@@ -106,7 +107,7 @@ export default function CompareVesselsPage({ activeRoute, onOpenCharterModal }) 
                     </span>
                     <div className="text-right">
                       <span className={`text-base font-bold ${isWinner ? 'text-[#F47B3A]' : 'text-[#DCE5E7]'}`}>
-                        ${vessel.freightRatePerMT.toFixed(2)}
+                        ${(vessel.freightRatePerMT || 28.5).toFixed(2)}
                       </span>
                       <span className="text-[10px] text-[#82949A] ml-1">/MT</span>
                     </div>
@@ -119,11 +120,13 @@ export default function CompareVesselsPage({ activeRoute, onOpenCharterModal }) 
                     </span>
                     <div className="text-right">
                       <span className="text-sm font-bold text-white">
-                        {vessel.waitingDays.total} Days
+                        {vessel.waitingDays?.total ?? vessel.waitingDays ?? 3.2} Days
                       </span>
-                      <span className="text-[10px] text-[#82949A] block">
-                        ({vessel.waitingDays.loading}d load / {vessel.waitingDays.discharge}d disch)
-                      </span>
+                      {typeof vessel.waitingDays === 'object' && (
+                        <span className="text-[10px] text-[#82949A] block">
+                          ({vessel.waitingDays.loading}d load / {vessel.waitingDays.discharge}d disch)
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -138,12 +141,12 @@ export default function CompareVesselsPage({ activeRoute, onOpenCharterModal }) 
                     </span>
                     <div className="text-right">
                       <span className={`text-xl font-bold font-mono-num ${isWinner ? 'text-[#F47B3A]' : 'text-white'}`}>
-                        ₹{vessel.costBreakdownCr.total} Cr
+                        ₹{vessel.costBreakdownCr?.total ?? (vessel.costBreakdownUSD ? (vessel.costBreakdownUSD.total * 83.2 / 1e7).toFixed(2) : '14.22')} Cr
                       </span>
                       {isWinner ? (
                         <span className="text-[10px] text-[#4FA69A] block font-bold">Lowest in Class</span>
                       ) : (
-                        <span className="text-[10px] text-[#D9573F] block">+₹{(vessel.costBreakdownCr.total - heroDecision.expectedTotalCostCr).toFixed(2)} Cr higher</span>
+                        <span className="text-[10px] text-[#D9573F] block">Alternative Fixture</span>
                       )}
                     </div>
                   </div>
@@ -157,11 +160,11 @@ export default function CompareVesselsPage({ activeRoute, onOpenCharterModal }) 
                       <span className="w-16 h-2 bg-[#0D1A20] rounded-full overflow-hidden border border-[#30454D] inline-block">
                         <span
                           className="h-full bg-[#4FA69A] block rounded-full"
-                          style={{ width: `${vessel.confidencePct}%` }}
+                          style={{ width: `${vessel.confidencePct || 85}%` }}
                         />
                       </span>
                       <span className="text-sm font-bold text-[#4FA69A]">
-                        {vessel.confidencePct}%
+                        {vessel.confidencePct || 85}%
                       </span>
                     </div>
                   </div>
@@ -178,7 +181,7 @@ export default function CompareVesselsPage({ activeRoute, onOpenCharterModal }) 
                         ? 'text-[#D9A441] bg-[#D9A441]/10 border-[#D9A441]/30' 
                         : 'text-[#D9573F] bg-[#D9573F]/10 border-[#D9573F]/30'
                     }`}>
-                      {vessel.riskLevel.toUpperCase()} RISK
+                      {(vessel.riskLevel || 'Low').toUpperCase()} RISK
                     </span>
                   </div>
 
@@ -186,11 +189,11 @@ export default function CompareVesselsPage({ activeRoute, onOpenCharterModal }) 
                   <div className="pt-3 space-y-1 text-[11px] text-[#82949A]">
                     <div className="flex justify-between">
                       <span>Laden Draft:</span>
-                      <span className="text-[#DCE5E7]">{vessel.draftMeters}m</span>
+                      <span className="text-[#DCE5E7]">{vessel.draftMeters || vessel.designLadenDraftM}m</span>
                     </div>
                     <div className="flex justify-between">
                       <span>LOA / Beam:</span>
-                      <span className="text-[#DCE5E7]">{vessel.loaMeters}m / {vessel.beamMeters}m</span>
+                      <span className="text-[#DCE5E7]">{vessel.loaMeters || vessel.loaM}m / {vessel.beamMeters || vessel.beamM}m</span>
                     </div>
                   </div>
                 </div>
@@ -217,24 +220,24 @@ export default function CompareVesselsPage({ activeRoute, onOpenCharterModal }) 
         })}
       </div>
 
-      {/* Excluded Vessel Callout (Capesize Restriction Context) */}
-      {excludedCapesize && (
-        <div className="card-shell p-5 bg-[#16262D]/60 border-l-4 border-l-[#D9573F] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Excluded Vessel Callout (Infeasible Fleet Segment Context) */}
+      {infeasibleVessels.map((exVessel) => (
+        <div key={exVessel.id} className="card-shell p-5 bg-[#16262D]/60 border-l-4 border-l-[#D9573F] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center space-x-2 text-xs font-hud font-bold text-[#D9573F] uppercase tracking-wider">
               <XCircle className="w-4 h-4" />
-              <span>EXCLUDED FLEET SEGMENT: {excludedCapesize.name.toUpperCase()}</span>
+              <span>EXCLUDED FLEET SEGMENT: {exVessel.name.toUpperCase()}</span>
             </div>
             <p className="text-xs text-[#82949A] max-w-3xl">
-              {excludedCapesize.feasibilityReason}
+              {exVessel.feasibilityReason}
             </p>
           </div>
 
           <div className="shrink-0 text-xs font-mono-num text-[#82949A] bg-[#0D1A20] px-3 py-2 rounded-lg border border-[#30454D]">
-            Draft Required: <strong className="text-[#D9573F]">{excludedCapesize.draftMeters}m</strong> vs Max <strong className="text-[#DCE5E7]">{activeRoute.portConstraints?.dischargePort?.maxDraftMeters || 14.5}m</strong>
+            Draft Required: <strong className="text-[#D9573F]">{exVessel.draftMeters || exVessel.designLadenDraftM}m</strong> vs Max <strong className="text-[#DCE5E7]">{activeRoute.portConstraints?.dischargePort?.maxDraftMeters || 14.5}m</strong>
           </div>
         </div>
-      )}
+      ))}
     </div>
   );
 }

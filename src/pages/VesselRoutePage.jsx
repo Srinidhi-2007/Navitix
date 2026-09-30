@@ -531,14 +531,20 @@ export default function VesselRoutePage({
               VESSEL SUITABILITY AT DISCHARGE BERTH
             </div>
             <div className="space-y-1.5">
-              {['handysize', 'supramax', 'panamax', 'capesize'].map((typeKey) => {
+              {(candidateVessels.length > 0 ? candidateVessels : [
+                { id: 'handysize', name: 'Handysize', isFeasible: true, feasibilityReason: 'Compliant with channel draft' },
+                { id: 'supramax', name: 'Supramax', isFeasible: true, feasibilityReason: 'Compliant with channel draft' },
+                { id: 'panamax', name: 'Panamax', isFeasible: true, feasibilityReason: 'Compliant with channel draft' },
+                { id: 'capesize', name: 'Capesize', isFeasible: false, feasibilityReason: 'Draft exceeds permissible limit' }
+              ]).map((vessel) => {
+                const typeKey = vessel.id;
                 const suit = dischargePort.suitability?.[typeKey];
-                const isPass = suit ? suit.feasible : (typeKey !== 'capesize');
-                const reason = suit?.reason || (isPass ? 'Compliant with channel draft' : 'Draft exceeds permissible limit');
+                const isPass = vessel.isFeasible ?? (suit ? suit.feasible : (typeKey !== 'capesize'));
+                const reason = vessel.feasibilityReason || suit?.reason || (isPass ? 'Compliant with channel draft' : 'Draft exceeds permissible limit');
                 return (
                   <div key={typeKey} className="flex items-center justify-between p-2 rounded bg-[#0D1A20] border border-[#30454D] text-xs">
                     <span className="font-hud uppercase tracking-wider text-[#DCE5E7] font-semibold">
-                      {typeKey}
+                      {vessel.name || typeKey}
                     </span>
                     <span className={`flex items-center space-x-1 font-mono-num ${isPass ? 'text-[#4FA69A]' : 'text-[#D9573F] font-bold'}`}>
                       {isPass ? (

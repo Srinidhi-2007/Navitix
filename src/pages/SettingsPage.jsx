@@ -77,7 +77,7 @@ export default function SettingsPage({
             SYSTEM CONFIGURATION & MODEL TELEMETRY
           </h2>
           <p className="text-xs text-[#82949A]">
-            Financial assumptions, commercial default thresholds, and live REST API contract inspection.
+            Financial assumptions, commercial default thresholds, and demo REST API contract inspection.
           </p>
         </div>
 
@@ -242,7 +242,7 @@ export default function SettingsPage({
               <div className="flex items-center space-x-2">
                 <Code className="w-4 h-4 text-[#F47B3A]" />
                 <h3 className="font-hud font-bold text-xs uppercase tracking-wider text-[#DCE5E7]">
-                  LIVE JSON CONTRACT TELEMETRY
+                  DEMO JSON CONTRACT TELEMETRY
                 </h3>
               </div>
 
@@ -276,7 +276,7 @@ export default function SettingsPage({
             <div>
               <div className="flex items-center justify-between text-[10px] font-hud uppercase tracking-wider text-[#82949A] mb-1.5">
                 <span>
-                  {activeJsonTab === 'request' ? 'POST /api/v1/charter/recommend PAYLOAD' : 'RECOMMENDATION RESPONSE SCHEMA (LIVE)'}
+                  {activeJsonTab === 'request' ? 'POST /api/v1/charter/recommend PAYLOAD' : 'RECOMMENDATION RESPONSE SCHEMA (DEMO)'}
                 </span>
                 <span className="font-mono text-[#4FA69A]">CONTRACT CONFORMANT</span>
               </div>

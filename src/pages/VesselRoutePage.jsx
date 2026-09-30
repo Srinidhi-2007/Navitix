@@ -338,7 +338,7 @@ export default function VesselRoutePage({
           <div className="flex items-center space-x-2.5">
             <Ship className="w-4 h-4 text-[#4FA69A]" />
             <h3 className="font-hud font-bold text-xs uppercase tracking-wider text-[#DCE5E7]">
-              FEASIBLE VESSEL CANDIDATES (LIVE EVALUATION FOR {cargoQty.toLocaleString()} MT)
+              FEASIBLE VESSEL CANDIDATES (DEMO EVALUATION FOR {cargoQty.toLocaleString()} MT)
             </h3>
           </div>
           <span className="text-[11px] font-mono-num text-[#82949A]">

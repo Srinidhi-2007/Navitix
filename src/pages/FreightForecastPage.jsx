@@ -577,7 +577,7 @@ export default function FreightForecastPage({ activeRoute, onOpenCharterModal })
           <div className="flex items-center space-x-2">
             <Sparkles className="w-4 h-4 text-[#F47B3A]" />
             <h4 className="text-xs font-hud font-bold uppercase tracking-wider text-[#DCE5E7]">
-              RECOMMENDED CHARTER ACTION ({timeHorizon}): {heroDecision.charterTimingAction ? heroDecision.charterTimingAction.toUpperCase() : 'CHARTER AT TROUGH'}
+              RECOMMENDED CHARTER ACTION ({timeHorizon}): CHARTER WITHIN {Math.max(1, dynamicTroughOffset - 1)}–{dynamicTroughOffset + 1} DAYS
             </h4>
           </div>
           <p className="text-xs text-[#82949A] mt-1 max-w-2xl">
@@ -587,9 +587,10 @@ export default function FreightForecastPage({ activeRoute, onOpenCharterModal })
 
         <button
           onClick={onOpenCharterModal}
-          className="px-6 py-2.5 bg-[#F47B3A] hover:bg-[#FF9A5A] text-white text-xs font-hud font-bold tracking-wider uppercase rounded-lg shadow-md transition-all shrink-0 cursor-pointer"
+          className="px-6 py-2.5 bg-[#F47B3A] hover:bg-[#FF9A5A] text-white text-xs font-hud font-bold tracking-wider uppercase rounded-lg shadow-md transition-all shrink-0 cursor-pointer flex flex-col items-center justify-center leading-snug"
         >
-          EXECUTE AT ${dynamicTroughRate ? dynamicTroughRate.toFixed(2) : '27.90'}/MT
+          <span className="text-[10px] opacity-90">TARGET EXECUTION LEVEL</span>
+          <span className="text-sm font-mono-num font-extrabold">~${dynamicTroughRate ? dynamicTroughRate.toFixed(2) : '27.90'}/MT (INDICATIVE SPOT)</span>
         </button>
       </div>
     </div>

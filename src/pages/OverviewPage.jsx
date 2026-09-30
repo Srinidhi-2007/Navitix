@@ -248,10 +248,15 @@ export default function OverviewPage({ activeRoute, onOpenCharterModal, onNaviga
 
             <button
               onClick={onOpenCharterModal}
-              className="w-full sm:w-auto px-8 py-3.5 bg-[#F47B3A] hover:bg-[#FF9A5A] text-white text-sm font-hud font-bold tracking-wider uppercase rounded-lg shadow-xl shadow-[#F47B3A]/30 hover:shadow-[#F47B3A]/50 transition-all transform hover:-translate-y-0.5 flex items-center justify-center space-x-2 group cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3 bg-[#F47B3A] hover:bg-[#FF9A5A] text-white text-xs font-hud font-bold tracking-wider uppercase rounded-lg shadow-xl shadow-[#F47B3A]/30 hover:shadow-[#F47B3A]/50 transition-all transform hover:-translate-y-0.5 flex flex-col items-center justify-center space-y-0.5 group cursor-pointer"
             >
-              <span>CHARTER NOW</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <div className="flex items-center space-x-2">
+                <span>INITIATE CHARTER FIXTURE</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+              <span className="text-[10px] font-mono-num font-normal opacity-90">
+                Target Spot Rate: ~${freightForecast.troughRate || '27.90'}/MT (Indicative Level)
+              </span>
             </button>
           </div>
         </div>

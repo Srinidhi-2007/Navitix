@@ -91,7 +91,7 @@ export default function Header({ activeTab, activeRoute, onSelectRoute, routePre
               <span className="relative inline-flex rounded-full h-2 w-2 bg-[#4FA69A]"></span>
             </span>
             <span className="text-[11px] font-mono-num text-[#4FA69A] font-semibold tracking-wider">
-              TELEMETRY ACTIVE
+              DEMO / SIMULATED DATA ACTIVE
             </span>
           </div>
 

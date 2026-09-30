@@ -53,17 +53,17 @@ export default function OverviewPage({ activeRoute, onOpenCharterModal, onNaviga
     const currentX = getX(currentPointIndex);
     const currentY = getY(points[currentPointIndex]?.actualRate ?? points[currentPointIndex]?.forecastRate ?? 28);
 
-    // Optimal window highlight rect
-    const optStart = points.findIndex(p => p.inOptimalWindow);
-    const optEnd = points.findLastIndex(p => p.inOptimalWindow);
+    // Optimal window highlight rect (bounded between dayOffset 3 and 5)
+    const optStart = points.findIndex(p => p.dayOffset >= 3);
+    const optEnd = points.findLastIndex(p => p.dayOffset <= 5);
     const optStartX = getX(optStart !== -1 ? optStart : 8);
     const optEndX = getX(optEnd !== -1 ? optEnd : 10);
 
-    // Trough point index & value
-    const troughIdx = points.findIndex(p => p.isTrough) !== -1 
-      ? points.findIndex(p => p.isTrough) 
-      : (freightForecast.troughDayOffset ? points.findIndex(p => p.dayOffset === freightForecast.troughDayOffset) : -1);
-    const safeTroughIdx = troughIdx !== -1 ? troughIdx : (optStart !== -1 ? optStart : 9);
+    // Trough point index & value (dayOffset +3 to +5)
+    const troughIdx = points.findIndex(p => p.dayOffset === (freightForecast.troughDayOffset || 4)) !== -1 
+      ? points.findIndex(p => p.dayOffset === (freightForecast.troughDayOffset || 4))
+      : (points.findIndex(p => p.isTrough) !== -1 ? points.findIndex(p => p.isTrough) : (optStart !== -1 ? optStart : 8));
+    const safeTroughIdx = troughIdx !== -1 ? troughIdx : 8;
     const troughRate = freightForecast.troughRate ?? (points[safeTroughIdx]?.forecastRate ?? 27.9);
     const troughY = getY(troughRate);
     const troughX = getX(safeTroughIdx);
@@ -474,7 +474,7 @@ export default function OverviewPage({ activeRoute, onOpenCharterModal, onNaviga
                 </h3>
               </div>
               <span className="text-[10px] font-mono-num text-[#82949A] px-1.5 py-0.5 rounded bg-[#0D1A20] border border-[#30454D]">
-                LIVE FEED
+                SIMULATED FEED
               </span>
             </div>
 

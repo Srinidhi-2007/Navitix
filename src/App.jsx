@@ -154,7 +154,7 @@ export default function App() {
             <div className="bg-[#4FA69A]/10 border-b border-[#4FA69A]/30 px-6 py-1 text-xs text-[#4FA69A] flex items-center justify-between font-mono">
               <span className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#4FA69A] animate-pulse"></span>
-                <span>LIVE MODEL ACTIVE &middot; {activeRoute?.riskAndConfidence?.modelTelemetry?.modelVersion || 'FastAPI Pipeline'}</span>
+                <span>DEMO / SIMULATED MODEL ACTIVE &middot; {activeRoute?.riskAndConfidence?.modelTelemetry?.modelVersion || 'FastAPI Pipeline'}</span>
               </span>
               <span className="opacity-80 text-[11px]">Latency: {activeRoute?.riskAndConfidence?.modelTelemetry?.inferenceLatencyMs || 0}ms</span>
             </div>

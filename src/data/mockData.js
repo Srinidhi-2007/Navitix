@@ -63,7 +63,7 @@ export const ROUTE_PRESETS = [
     },
 
     alerts: [
-      { id: 1, type: "opportunity", title: "Freight Window Alert", text: "Panamax rate is projected to bottom out at $27.90/MT in 4 days. Lock in fixture before charter rate rebound.", tag: "TIMING OPTIMAL" },
+      { id: 1, type: "opportunity", title: "Freight Window Alert", text: "Panamax rate is projected to bottom out at $27.90/MT in 4 days (Sep 9–11 window). Lock in fixture before post-monsoon rate rebound.", tag: "TIMING OPTIMAL" },
       { id: 2, type: "port", title: "Paradip Berth Congestion Easing", text: "Discharge anchorage delays reduced from 2.4 days to 1.8 days following berth 2 mechanized unloader maintenance.", tag: "PORT TELEMETRY" },
       { id: 3, type: "market", title: "Baltic Panamax Index (BPI) Movement", text: "BPI 4TC average down 1.8% today, opening favorable spot fixture negotiation window in Pacific basin.", tag: "MARKET BENCHMARK" }
     ],

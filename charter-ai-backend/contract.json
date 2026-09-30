@@ -16,12 +16,12 @@
     {
       "method": "GET",
       "path": "/api/v1/ports",
-      "returns": "ports.json content (for dropdowns and the Leaflet map)"
+      "returns": "ports.json content (6 supported ports: paradip, hay-point, port-hedland, qingdao, santos, alexandria)"
     },
     {
       "method": "GET",
       "path": "/api/v1/vessels",
-      "returns": "vessels.json content"
+      "returns": "vessels.json content (8 vessel classes: handysize, supramax, panamax, capesize, ultramax, kamsarmax, newcastlemax, valemax)"
     },
     {
       "method": "GET",
@@ -46,8 +46,8 @@
       "bunkerFuelPricePerMT": 620
     },
     "_notes": {
-      "originPortId/destinationPortId": "ids from ports.json",
-      "assumptions": "Mirror the Settings page inputs. usdToInr 83.2 is derived from the mock (₹14.22 Cr = $1.71M); replace with a live rate."
+      "originPortId/destinationPortId": "ids from ports.json (paradip, hay-point, port-hedland, qingdao, santos, alexandria)",
+      "assumptions": "Mirror the Settings page inputs. usdToInr 83.2 is derived from the mock (₹14.21 Cr = $1.71M); replace with a live rate."
     }
   },
   "response": {

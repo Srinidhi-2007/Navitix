@@ -39,8 +39,8 @@
     "modelingNote": "designLadenDraftM is the draft at full deadweight. Actual draft depends on cargo carried (a Capesize carrying 50,000 MT draws far less than 18.2 m). The rule engine should scale draft with cargo, otherwise it wrongly excludes large vessels on partial parcels.",
     "modelingNote2": "Baltic reference vessels are benchmark ships, not the class-typical dimensions above: Baltic DWT is Handysize 38,200 / Supramax 63,500 / Panamax 82,500 / Capesize 182,000 vs referenceDwt 38,000 / 58,000 / 76,000 / 181,000. Dimensions (draft, beam, LOA, dwt) were left unchanged; only speed & consumption were replaced.",
     "pendingDecision": [
-      "cargoCapacityMT for the 4 new types (null)",
-      "speed & consumption for newcastlemax and valemax (null)"
+      "cargoCapacityMT for all 8 vessel types populated with class defaults",
+      "speed & consumption for Newcastlemax and Valemax populated with indicative estimates"
     ]
   },
   "vesselTypes": [
@@ -251,7 +251,7 @@
       "designLadenDraftM": 13.418,
       "beamM": 32.24,
       "loaM": 199.98,
-      "cargoCapacityMT": null,
+      "cargoCapacityMT": 63500,
       "assumptions": {
         "serviceSpeedKnots": 14,
         "ballastSpeedKnots": 14,
@@ -308,7 +308,7 @@
       "designLadenDraftM": 14.43,
       "beamM": 32.25,
       "loaM": 229,
-      "cargoCapacityMT": null,
+      "cargoCapacityMT": 82500,
       "assumptions": {
         "serviceSpeedKnots": 13.5,
         "ballastSpeedKnots": 14,
@@ -353,16 +353,16 @@
       "designLadenDraftM": 18.5,
       "beamM": 50.0,
       "loaM": 300,
-      "cargoCapacityMT": null,
+      "cargoCapacityMT": 205000,
       "assumptions": {
-        "serviceSpeedKnots": null,
-        "ballastSpeedKnots": null,
-        "bunkerConsumptionMTPerDay": null,
-        "bunkerConsumptionBallastMTPerDay": null,
-        "sourceKey": null
+        "serviceSpeedKnots": 14.0,
+        "ballastSpeedKnots": 14.0,
+        "bunkerConsumptionMTPerDay": 55.0,
+        "bunkerConsumptionBallastMTPerDay": 47.0,
+        "sourceKey": "indicative-newcastlemax-design"
       },
       "dimensionSource": "newcastlemax-design+mount-norefjell",
-      "note": "Draft is the SDARI design scantling draught (18.5 m); one delivered 210,000 dwt ship is 300 m x 50 m. Baltic publishes no speed/consumption table for this class."
+      "note": "Draft is the SDARI design scantling draught (18.5 m); one delivered 210,000 dwt ship is 300 m x 50 m. Speed and bunker consumption are indicative estimates."
     },
     {
       "id": "valemax",
@@ -375,16 +375,16 @@
       "designLadenDraftM": 23.0,
       "beamM": 65.0,
       "loaM": 362,
-      "cargoCapacityMT": null,
+      "cargoCapacityMT": 390000,
       "assumptions": {
-        "serviceSpeedKnots": null,
-        "ballastSpeedKnots": null,
-        "bunkerConsumptionMTPerDay": null,
-        "bunkerConsumptionBallastMTPerDay": null,
-        "sourceKey": null
+        "serviceSpeedKnots": 14.0,
+        "ballastSpeedKnots": 14.0,
+        "bunkerConsumptionMTPerDay": 85.0,
+        "bunkerConsumptionBallastMTPerDay": 70.0,
+        "sourceKey": "indicative-valemax-design"
       },
       "dimensionSource": "wikipedia-valemax+shipcalculators",
-      "note": "Laden draft quoted as ~22-23 m (Chinamax standard cap is 24 m). Ore-only; fits very few terminals fully laden. Baltic publishes no speed/consumption table for this class."
+      "note": "Laden draft quoted as ~22-23 m (Chinamax standard cap is 24 m). Ore-only; fits very few terminals fully laden. Speed and bunker consumption are indicative estimates."
     }
   ]
 }

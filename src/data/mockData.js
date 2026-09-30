@@ -857,6 +857,26 @@ export const ROUTE_PRESETS = [
 
 export const DEFAULT_ROUTE_ID = "aus-paradip-coking-coal";
 
+export const VESSEL_CLASSES = [
+  { id: "handysize", name: "Handysize", dwt: 38000, capacityMT: 35000, designDraftM: 10.5, loaM: 180, beamM: 28.4 },
+  { id: "supramax", name: "Supramax", dwt: 58000, capacityMT: 58000, designDraftM: 12.8, loaM: 190, beamM: 32.2 },
+  { id: "ultramax", name: "Ultramax", dwt: 63500, capacityMT: 63500, designDraftM: 13.4, loaM: 200, beamM: 32.2 },
+  { id: "panamax", name: "Panamax", dwt: 76000, capacityMT: 75000, designDraftM: 14.2, loaM: 225, beamM: 32.2 },
+  { id: "kamsarmax", name: "Kamsarmax", dwt: 82500, capacityMT: 82500, designDraftM: 14.4, loaM: 229, beamM: 32.3 },
+  { id: "capesize", name: "Capesize", dwt: 181000, capacityMT: 180000, designDraftM: 18.2, loaM: 292, beamM: 45.0 },
+  { id: "newcastlemax", name: "Newcastlemax", dwt: 210000, capacityMT: 205000, designDraftM: 18.5, loaM: 300, beamM: 50.0 },
+  { id: "valemax", name: "Valemax / VLOC", dwt: 400000, capacityMT: 390000, designDraftM: 23.0, loaM: 362, beamM: 65.0 },
+];
+
+export const SUPPORTED_PORTS = [
+  { id: "hay-point", name: "Hay Point Coal Terminal (DBCT)", country: "Australia", role: "load", maxDraftM: 19.5, maxLoaM: 300 },
+  { id: "port-hedland", name: "Port Hedland", country: "Australia", role: "load", maxDraftM: 19.8, maxLoaM: 330 },
+  { id: "santos", name: "Port of Santos (Outer Basin)", country: "Brazil", role: "load", maxDraftM: 14.5, maxLoaM: 280 },
+  { id: "paradip", name: "Paradip Port", country: "India", role: "discharge", maxDraftM: 16.5, maxLoaM: 300 },
+  { id: "qingdao", name: "Qingdao Qianwan Ore Terminal", country: "China", role: "discharge", maxDraftM: 21.5, maxLoaM: 350 },
+  { id: "alexandria", name: "Port of Alexandria Grain Terminal", country: "Egypt", role: "discharge", maxDraftM: 13.5, maxLoaM: 220 },
+];
+
 export function getRouteData(routeId) {
   const found = ROUTE_PRESETS.find(r => r.id === routeId);
   return found || ROUTE_PRESETS[0];

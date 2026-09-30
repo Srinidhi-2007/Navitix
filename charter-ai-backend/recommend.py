@@ -170,6 +170,8 @@ def recommend(request: Dict[str, Any], data_dir: str = ".") -> Dict[str, Any]:
         "distanceNM": distance_nm,
         "originCongestionDays": origin_port.get("defaultCongestionDays", 1.4),
         "destCongestionDays": dest_port.get("defaultCongestionDays", 1.8),
+        "originHandlingMTPD": origin_port.get("handlingCapacityMTPD", 65000.0),
+        "destHandlingMTPD": dest_port.get("handlingCapacityMTPD", 35000.0),
         "rateScale": rate_scale,
     }
     priced_candidates = price_candidates(

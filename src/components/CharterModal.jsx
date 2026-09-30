@@ -12,7 +12,7 @@ import {
   FileText 
 } from 'lucide-react';
 
-export default function CharterModal({ isOpen, onClose, activeRoute }) {
+export default function CharterModal({ isOpen, onClose, activeRoute, requestPayload = {} }) {
   const [copied, setCopied] = useState(false);
   const [dispatched, setDispatched] = useState(false);
 
@@ -20,11 +20,21 @@ export default function CharterModal({ isOpen, onClose, activeRoute }) {
 
   const vessel = activeRoute.candidateVessels.find(v => v.id === activeRoute.heroDecision.recommendedVesselId) || activeRoute.candidateVessels[0];
 
+  const contractTypeKey = requestPayload.contractType || 'spot';
+  const contractDuration = requestPayload.contractDurationDays || 15;
+  const contractTypeLabel = contractTypeKey === 'time'
+    ? 'TIME CHARTER (PERIOD HIRE)'
+    : contractTypeKey === 'multi'
+    ? 'MULTI-VOYAGE / COA'
+    : 'SPOT CHARTER (SINGLE VOYAGE)';
+
   const brokerOrderText = `CHARTER FIXTURE ORDER — NAVITIX DISPATCH
 REF: NVX-${Math.floor(100000 + Math.random() * 900000)}
 DATE: ${new Date().toISOString().slice(0, 10)}
 ACCOUNT: NAVITIX COMMERCIAL DESK
 
+CONTRACT TYPE: ${contractTypeLabel}
+DURATION: ${contractDuration} DAYS
 CARGO: ${activeRoute.cargoQuantityMT.toLocaleString()} MT 5% MOLOO ${activeRoute.cargoType.toUpperCase()}
 VESSEL REQ: ${vessel.name.toUpperCase()} (MAX DRAFT ${vessel.draftMeters}M / LOA ${vessel.loaMeters}M)
 LOAD PORT: ${activeRoute.originPort.toUpperCase()} — 1-2 SB 1 SP
@@ -127,13 +137,19 @@ STATUS: FIRM ORDER — TIMING WINDOW ${activeRoute.heroDecision.charterTimingAct
               <div className="flex items-start space-x-2.5">
                 <CheckCircle2 className="w-4 h-4 text-[#4FA69A] shrink-0 mt-0.5" />
                 <span className="text-[#DCE5E7]">
-                  <strong>Port Draft Clearance:</strong> {vessel.draftMeters}m draft verified against Paradip max 14.5m (0.3m safe underkeel margin).
+                  <strong>Port Draft Clearance:</strong> {vessel.draftMeters}m draft verified against {activeRoute.destinationPort || 'discharge port'} max 14.5m limit.
                 </span>
               </div>
               <div className="flex items-start space-x-2.5">
                 <CheckCircle2 className="w-4 h-4 text-[#4FA69A] shrink-0 mt-0.5" />
                 <span className="text-[#DCE5E7]">
-                  <strong>Parcel Capacity Match:</strong> 50,000 MT fits {vessel.name} deadweight envelope without requiring split-loading.
+                  <strong>Contract Structure:</strong> {contractTypeLabel} for {contractDuration} days pre-validated against commercial risk policies.
+                </span>
+              </div>
+              <div className="flex items-start space-x-2.5">
+                <CheckCircle2 className="w-4 h-4 text-[#4FA69A] shrink-0 mt-0.5" />
+                <span className="text-[#DCE5E7]">
+                  <strong>Parcel Capacity Match:</strong> {activeRoute.cargoQuantityMT?.toLocaleString() || '50,000'} MT fits {vessel.name} deadweight envelope.
                 </span>
               </div>
               <div className="flex items-start space-x-2.5">

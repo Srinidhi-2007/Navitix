@@ -210,6 +210,7 @@ export default function App() {
         isOpen={isCharterModalOpen}
         onClose={() => setIsCharterModalOpen(false)}
         activeRoute={activeRoute}
+        requestPayload={requestPayload}
       />
     </div>
   );

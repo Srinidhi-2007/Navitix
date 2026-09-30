@@ -84,6 +84,8 @@ def price_candidates(
     distance_nm      = float(assumptions.get("distanceNM", REFERENCE_DISTANCE_NM))
     load_cong        = float(assumptions.get("originCongestionDays", 1.4))
     disch_cong       = float(assumptions.get("destCongestionDays", 1.8))
+    origin_handling  = float(assumptions.get("originHandlingMTPD", 65_000.0))
+    dest_handling    = float(assumptions.get("destHandlingMTPD", 35_000.0))
 
     for cand in rules_result:
         v_id     = cand["id"]
@@ -111,8 +113,15 @@ def price_candidates(
         sea_days     = distance_nm / (speed_kn * 24)
         bunker_usd   = voyages * sea_days * cons_mt_d * bunker_price
 
-        # -- Demurrage / Port Waiting ----------------------------------------
-        total_wait_days  = load_cong + disch_cong
+        # -- Demurrage / Port Berth & Handling Time -------------------------
+        # Handling time depends on vessel parcel size and port handling capacity
+        load_handling_days  = cargo_per_voyage / origin_handling if origin_handling > 0 else 1.0
+        disch_handling_days = cargo_per_voyage / dest_handling if dest_handling > 0 else 1.5
+        
+        # Total berth/turnaround time per voyage (queue + berth handling)
+        total_load_days  = load_cong + load_handling_days
+        total_disch_days = disch_cong + disch_handling_days
+        total_wait_days  = total_load_days + total_disch_days
         demurrage_usd    = voyages * total_wait_days * dem_usd_day
 
         # -- Misc ------------------------------------------------------------
@@ -126,10 +135,10 @@ def price_candidates(
         # Compute raw Cr values then round so components sum exactly to total
         total_cr = round(to_cr(total_usd), 2)
         raw_cr = {
-            "freight":         to_cr(freight_usd),
+            "freight":          to_cr(freight_usd),
             "waitingDemurrage": to_cr(demurrage_usd),
-            "bunkerFuel":      to_cr(bunker_usd),
-            "portCanalMisc":   to_cr(misc_usd),
+            "bunkerFuel":       to_cr(bunker_usd),
+            "portCanalMisc":    to_cr(misc_usd),
         }
         cr_parts = _round_components_to_total(raw_cr, total_cr)
 
@@ -137,8 +146,8 @@ def price_candidates(
         cand["freightRatePerMT"]   = round(scaled_rate, 2)
         cand["voyageDays"]         = round(sea_days, 1)
         cand["waitingDays"]        = {
-            "loading":   round(load_cong, 1),
-            "discharge": round(disch_cong, 1),
+            "loading":   round(total_load_days, 1),
+            "discharge": round(total_disch_days, 1),
             "total":     round(total_wait_days, 1),
         }
         cand["costBreakdownUSD"] = {

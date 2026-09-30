@@ -872,7 +872,7 @@ export const SUPPORTED_PORTS = [
   { id: "hay-point", name: "Hay Point Coal Terminal (DBCT)", country: "Australia", role: "load", maxDraftM: 19.5, maxLoaM: 300 },
   { id: "port-hedland", name: "Port Hedland", country: "Australia", role: "load", maxDraftM: 19.8, maxLoaM: 330 },
   { id: "santos", name: "Port of Santos (Outer Basin)", country: "Brazil", role: "load", maxDraftM: 14.5, maxLoaM: 280 },
-  { id: "paradip", name: "Paradip Port", country: "India", role: "discharge", maxDraftM: 16.5, maxLoaM: 300 },
+  { id: "paradip", name: "Paradip Port", country: "India", role: "discharge", maxDraftM: 14.5, maxLoaM: 300 },
   { id: "qingdao", name: "Qingdao Qianwan Ore Terminal", country: "China", role: "discharge", maxDraftM: 21.5, maxLoaM: 350 },
   { id: "alexandria", name: "Port of Alexandria Grain Terminal", country: "Egypt", role: "discharge", maxDraftM: 13.5, maxLoaM: 220 },
 ];

@@ -261,6 +261,38 @@ export default function VesselRoutePage({
             />
           </div>
 
+          {/* Contract Type Selector */}
+          <div>
+            <label className="text-[10px] font-hud uppercase tracking-wider text-[#82949A] block mb-1">
+              CHARTER CONTRACT TYPE
+            </label>
+            <select
+              value={requestPayload.contractType || 'spot'}
+              onChange={(e) => handleFieldChange('contractType', e.target.value)}
+              className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none cursor-pointer"
+            >
+              <option value="spot">Spot Charter (Single Voyage)</option>
+              <option value="time">Time Charter (Period Hire)</option>
+              <option value="multi">Multi-Voyage / COA (Contract of Affreightment)</option>
+            </select>
+          </div>
+
+          {/* Contract Duration (Days) */}
+          <div>
+            <label className="text-[10px] font-hud uppercase tracking-wider text-[#82949A] block mb-1">
+              CONTRACT DURATION (DAYS)
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="365"
+              value={requestPayload.contractDurationDays ?? (requestPayload.contractType === 'time' ? 30 : requestPayload.contractType === 'multi' ? 90 : 15)}
+              onChange={(e) => handleFieldChange('contractDurationDays', Math.max(1, Number(e.target.value)))}
+              onKeyDown={handleKeyDown}
+              className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none font-bold"
+            />
+          </div>
+
           {/* Allow Split Parcel Toggle */}
           <div className="flex flex-col justify-end">
             <label className="text-[10px] font-hud uppercase tracking-wider text-[#82949A] block mb-1">

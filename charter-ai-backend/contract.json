@@ -39,6 +39,8 @@
     "laycanStart": "2026-09-12",
     "laycanEnd": "2026-09-16",
     "desiredArrivalDate": "2026-09-28",
+    "contractType": "spot",
+    "contractDurationDays": 15,
     "assumptions": {
       "currency": "INR",
       "usdToInr": 83.2,
@@ -47,6 +49,8 @@
     },
     "_notes": {
       "originPortId/destinationPortId": "ids from ports.json (paradip, hay-point, port-hedland, qingdao, santos, alexandria)",
+      "contractType": "spot | time | multi",
+      "contractDurationDays": "duration in days (default 15 for single spot voyage, 30-90+ for time charter or multi-voyage COA)",
       "assumptions": "Mirror the Settings page inputs. usdToInr 83.2 is derived from the mock (₹14.21 Cr = $1.71M); replace with a live rate."
     }
   },

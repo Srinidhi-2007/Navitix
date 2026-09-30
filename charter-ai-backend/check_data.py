@@ -133,11 +133,14 @@ def check_data(data_dir: str = ".") -> Dict[str, List[str]]:
         seen_vessel_ids.add(v_id)
 
         # Required fields
-        for req_field in ["designLadenDraftM", "beamM", "loaM", "cargoCapacityMT"]:
+        for req_field in ["designLadenDraftM", "beamM", "loaM"]:
             if vessel.get(req_field) is None:
                 errors.append(f"Vessel '{v_id}' is missing required field '{req_field}'")
             elif vessel.get(req_field) <= 0:
                 errors.append(f"Vessel '{v_id}' has invalid non-positive dimension {req_field}={vessel.get(req_field)}")
+
+        if vessel.get("cargoCapacityMT") is not None and vessel.get("cargoCapacityMT") <= 0:
+            errors.append(f"Vessel '{v_id}' has invalid non-positive dimension cargoCapacityMT={vessel.get('cargoCapacityMT')}")
 
         # Assumptions block
         if not vessel.get("assumptions") or not isinstance(vessel.get("assumptions"), dict):

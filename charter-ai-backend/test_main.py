@@ -33,7 +33,7 @@ def test_get_vessels_endpoint():
     assert response.status_code == 200
     data = response.json()
     assert "vesselTypes" in data
-    assert len(data["vesselTypes"]) == 4
+    assert len(data["vesselTypes"]) >= 4
 
 
 def test_get_routes_endpoint():

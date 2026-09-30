@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "version": "0.1-prototype",
+    "version": "0.3-baltic+classes",
     "status": "INDICATIVE — class-typical values, not vessel-specific",
     "sources": {
       "UNCTAD": {
@@ -14,9 +14,34 @@
         }
       },
       "mockData.js": "Per-class draft/beam/LOA/dwt/capacity are taken from the dashboard's mock store so backend and UI agree. Standard class conventions; verify against a fleet database before publishing.",
-      "assumptions block": "Speed and bunker consumption are NOT from the listed sources; they are indicative placeholders for the cost engine. Replace with real figures."
+      "baltic-dry-services": {
+        "url": "https://www.balticexchange.com/en/data-services/market-information0/dry-services.html",
+        "retrieved": "2026-09-30",
+        "used_for": "serviceSpeedKnots / bunkerConsumptionMTPerDay (laden) and bunkerConsumptionBallastMTPerDay, from the published Baltic reference-vessel speed & consumption tables (top / design-speed row). Full profiles incl. slow-steaming rows are under balticReference.speedConsumptionProfile."
+      },
+      "newcastlemax-design": {
+        "url": "https://maritime-executive.com/article/newcastlemax-lng-fuelled-bulker-design-ready",
+        "used_for": "Newcastlemax LOA 300 m, beam 50 m, scantling draught 18.5 m, 210,000 dwt (SDARI design)"
+      },
+      "mount-norefjell": {
+        "url": "https://en.wikipedia.org/wiki/MV_Mount_Norefjell",
+        "used_for": "Delivered 210,000 dwt Newcastlemax, 300 m x 50 m"
+      },
+      "wikipedia-valemax": {
+        "url": "https://en.wikipedia.org/wiki/Valemax",
+        "used_for": "Valemax 380-400k dwt, 360-362 m, beam 65 m"
+      },
+      "shipcalculators": {
+        "url": "https://shipcalculators.com/wiki/bulk-carrier-size-classes",
+        "used_for": "Valemax loaded draft ~22-23 m"
+      }
     },
-    "modelingNote": "designLadenDraftM is the draft at full deadweight. Actual draft depends on cargo carried (a Capesize carrying 50,000 MT draws far less than 18.2 m). The rule engine should scale draft with cargo, otherwise it wrongly excludes large vessels on partial parcels."
+    "modelingNote": "designLadenDraftM is the draft at full deadweight. Actual draft depends on cargo carried (a Capesize carrying 50,000 MT draws far less than 18.2 m). The rule engine should scale draft with cargo, otherwise it wrongly excludes large vessels on partial parcels.",
+    "modelingNote2": "Baltic reference vessels are benchmark ships, not the class-typical dimensions above: Baltic DWT is Handysize 38,200 / Supramax 63,500 / Panamax 82,500 / Capesize 182,000 vs referenceDwt 38,000 / 58,000 / 76,000 / 181,000. Dimensions (draft, beam, LOA, dwt) were left unchanged; only speed & consumption were replaced.",
+    "pendingDecision": [
+      "cargoCapacityMT for the 4 new types (null)",
+      "speed & consumption for newcastlemax and valemax (null)"
+    ]
   },
   "vesselTypes": [
     {
@@ -32,8 +57,34 @@
       "loaM": 180,
       "cargoCapacityMT": 35000,
       "assumptions": {
-        "serviceSpeedKnots": 13.0,
-        "bunkerConsumptionMTPerDay": 24
+        "serviceSpeedKnots": 14,
+        "ballastSpeedKnots": 14,
+        "bunkerConsumptionMTPerDay": 26,
+        "bunkerConsumptionBallastMTPerDay": 24,
+        "sourceKey": "baltic-dry-services"
+      },
+      "balticReference": {
+        "vessel": "Baltic Handysize 38",
+        "dwt": 38200,
+        "sswDraftM": 10.538,
+        "loaM": 180,
+        "beamM": 29.8,
+        "fuel": "IFO 380cst + 0.1 MT MDO at sea",
+        "scrubber": false,
+        "speedConsumptionProfile": [
+          {
+            "ladenKnots": 14,
+            "ladenMTPerDay": 26,
+            "ballastKnots": 14,
+            "ballastMTPerDay": 24
+          },
+          {
+            "ladenKnots": 12,
+            "ladenMTPerDay": 18,
+            "ballastKnots": 12,
+            "ballastMTPerDay": 17
+          }
+        ]
       }
     },
     {
@@ -49,8 +100,46 @@
       "loaM": 190,
       "cargoCapacityMT": 58000,
       "assumptions": {
-        "serviceSpeedKnots": 14.0,
-        "bunkerConsumptionMTPerDay": 28
+        "serviceSpeedKnots": 14,
+        "ballastSpeedKnots": 14,
+        "bunkerConsumptionMTPerDay": 29,
+        "bunkerConsumptionBallastMTPerDay": 25,
+        "sourceKey": "baltic-dry-services"
+      },
+      "balticReference": {
+        "vessel": "Baltic Supramax 63.5",
+        "dwt": 63500,
+        "sswDraftM": 13.418,
+        "loaM": 199.98,
+        "beamM": 32.24,
+        "fuel": "MFO, no MGO at sea",
+        "scrubber": false,
+        "speedConsumptionProfile": [
+          {
+            "ladenKnots": 14,
+            "ladenMTPerDay": 29,
+            "ballastKnots": 14,
+            "ballastMTPerDay": 25
+          },
+          {
+            "ladenKnots": 13,
+            "ladenMTPerDay": 24,
+            "ballastKnots": 13,
+            "ballastMTPerDay": 21
+          },
+          {
+            "ladenKnots": 12,
+            "ladenMTPerDay": 20,
+            "ballastKnots": 12,
+            "ballastMTPerDay": 17
+          },
+          {
+            "ladenKnots": 11,
+            "ladenMTPerDay": 16.5,
+            "ballastKnots": 11,
+            "ballastMTPerDay": 14
+          }
+        ]
       }
     },
     {
@@ -66,8 +155,34 @@
       "loaM": 225,
       "cargoCapacityMT": 75000,
       "assumptions": {
-        "serviceSpeedKnots": 14.0,
-        "bunkerConsumptionMTPerDay": 30
+        "serviceSpeedKnots": 13.5,
+        "ballastSpeedKnots": 14,
+        "bunkerConsumptionMTPerDay": 33,
+        "bunkerConsumptionBallastMTPerDay": 31,
+        "sourceKey": "baltic-dry-services"
+      },
+      "balticReference": {
+        "vessel": "Baltic Panamax 82.5",
+        "dwt": 82500,
+        "sswDraftM": 14.43,
+        "loaM": 229,
+        "beamM": 32.25,
+        "fuel": "Fuel oil 380cst + 0.1 MT MGO at sea",
+        "scrubber": false,
+        "speedConsumptionProfile": [
+          {
+            "ladenKnots": 13.5,
+            "ladenMTPerDay": 33,
+            "ballastKnots": 14,
+            "ballastMTPerDay": 31
+          },
+          {
+            "ladenKnots": 11.5,
+            "ladenMTPerDay": 22,
+            "ballastKnots": 12.5,
+            "ballastMTPerDay": 23
+          }
+        ]
       }
     },
     {
@@ -83,9 +198,193 @@
       "loaM": 292,
       "cargoCapacityMT": 180000,
       "assumptions": {
-        "serviceSpeedKnots": 14.0,
-        "bunkerConsumptionMTPerDay": 55
+        "serviceSpeedKnots": 14,
+        "ballastSpeedKnots": 14,
+        "bunkerConsumptionMTPerDay": 52,
+        "bunkerConsumptionBallastMTPerDay": 44,
+        "sourceKey": "baltic-dry-services"
+      },
+      "balticReference": {
+        "vessel": "Baltic Capesize 182",
+        "dwt": 182000,
+        "sswDraftM": 18.2,
+        "loaM": 292,
+        "beamM": 45,
+        "fuel": "MFO, no diesel at sea",
+        "scrubber": false,
+        "speedConsumptionProfile": [
+          {
+            "ladenKnots": 14,
+            "ladenMTPerDay": 52,
+            "ballastKnots": 14,
+            "ballastMTPerDay": 44
+          },
+          {
+            "ladenKnots": 13,
+            "ladenMTPerDay": 44,
+            "ballastKnots": 13,
+            "ballastMTPerDay": 36
+          },
+          {
+            "ladenKnots": 12,
+            "ladenMTPerDay": 36,
+            "ballastKnots": 12,
+            "ballastMTPerDay": 29
+          },
+          {
+            "ladenKnots": 11,
+            "ladenMTPerDay": 29,
+            "ballastKnots": 11,
+            "ballastMTPerDay": 23
+          }
+        ]
       }
+    },
+    {
+      "id": "ultramax",
+      "name": "Ultramax",
+      "typicalDwtRange": [
+        60000,
+        65000
+      ],
+      "referenceDwt": 63500,
+      "designLadenDraftM": 13.418,
+      "beamM": 32.24,
+      "loaM": 199.98,
+      "cargoCapacityMT": null,
+      "assumptions": {
+        "serviceSpeedKnots": 14,
+        "ballastSpeedKnots": 14,
+        "bunkerConsumptionMTPerDay": 29,
+        "bunkerConsumptionBallastMTPerDay": 25,
+        "sourceKey": "baltic-dry-services"
+      },
+      "balticReference": {
+        "vessel": "Baltic Supramax 63.5 (BSI63)",
+        "dwt": 63500,
+        "sswDraftM": 13.418,
+        "loaM": 199.98,
+        "beamM": 32.24,
+        "fuel": "MFO, no MGO at sea",
+        "scrubber": false,
+        "speedConsumptionProfile": [
+          {
+            "ladenKnots": 14,
+            "ladenMTPerDay": 29,
+            "ballastKnots": 14,
+            "ballastMTPerDay": 25
+          },
+          {
+            "ladenKnots": 13,
+            "ladenMTPerDay": 24,
+            "ballastKnots": 13,
+            "ballastMTPerDay": 21
+          },
+          {
+            "ladenKnots": 12,
+            "ladenMTPerDay": 20,
+            "ballastKnots": 12,
+            "ballastMTPerDay": 17
+          },
+          {
+            "ladenKnots": 11,
+            "ladenMTPerDay": 16.5,
+            "ballastKnots": 11,
+            "ballastMTPerDay": 14
+          }
+        ]
+      },
+      "dimensionSource": "baltic-dry-services",
+      "note": "Same Baltic ship as the Supramax reference; listed separately so an Ultramax fixture uses the exact Baltic vessel."
+    },
+    {
+      "id": "kamsarmax",
+      "name": "Kamsarmax",
+      "typicalDwtRange": [
+        82000,
+        82500
+      ],
+      "referenceDwt": 82500,
+      "designLadenDraftM": 14.43,
+      "beamM": 32.25,
+      "loaM": 229,
+      "cargoCapacityMT": null,
+      "assumptions": {
+        "serviceSpeedKnots": 13.5,
+        "ballastSpeedKnots": 14,
+        "bunkerConsumptionMTPerDay": 33,
+        "bunkerConsumptionBallastMTPerDay": 31,
+        "sourceKey": "baltic-dry-services"
+      },
+      "balticReference": {
+        "vessel": "Baltic Panamax 82.5",
+        "dwt": 82500,
+        "sswDraftM": 14.43,
+        "loaM": 229,
+        "beamM": 32.25,
+        "fuel": "Fuel oil 380cst + 0.1 MT MGO at sea",
+        "scrubber": false,
+        "speedConsumptionProfile": [
+          {
+            "ladenKnots": 13.5,
+            "ladenMTPerDay": 33,
+            "ballastKnots": 14,
+            "ballastMTPerDay": 31
+          },
+          {
+            "ladenKnots": 11.5,
+            "ladenMTPerDay": 22,
+            "ballastKnots": 12.5,
+            "ballastMTPerDay": 23
+          }
+        ]
+      },
+      "dimensionSource": "baltic-dry-services",
+      "note": "229 m is the Port Kamsar length limit; matches the Baltic Panamax reference."
+    },
+    {
+      "id": "newcastlemax",
+      "name": "Newcastlemax",
+      "typicalDwtRange": [
+        208000,
+        210000
+      ],
+      "referenceDwt": 210000,
+      "designLadenDraftM": 18.5,
+      "beamM": 50.0,
+      "loaM": 300,
+      "cargoCapacityMT": null,
+      "assumptions": {
+        "serviceSpeedKnots": null,
+        "ballastSpeedKnots": null,
+        "bunkerConsumptionMTPerDay": null,
+        "bunkerConsumptionBallastMTPerDay": null,
+        "sourceKey": null
+      },
+      "dimensionSource": "newcastlemax-design+mount-norefjell",
+      "note": "Draft is the SDARI design scantling draught (18.5 m); one delivered 210,000 dwt ship is 300 m x 50 m. Baltic publishes no speed/consumption table for this class."
+    },
+    {
+      "id": "valemax",
+      "name": "Valemax / VLOC",
+      "typicalDwtRange": [
+        380000,
+        400000
+      ],
+      "referenceDwt": 400000,
+      "designLadenDraftM": 23.0,
+      "beamM": 65.0,
+      "loaM": 362,
+      "cargoCapacityMT": null,
+      "assumptions": {
+        "serviceSpeedKnots": null,
+        "ballastSpeedKnots": null,
+        "bunkerConsumptionMTPerDay": null,
+        "bunkerConsumptionBallastMTPerDay": null,
+        "sourceKey": null
+      },
+      "dimensionSource": "wikipedia-valemax+shipcalculators",
+      "note": "Laden draft quoted as ~22-23 m (Chinamax standard cap is 24 m). Ore-only; fits very few terminals fully laden. Baltic publishes no speed/consumption table for this class."
     }
   ]
 }

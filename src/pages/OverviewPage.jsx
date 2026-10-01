@@ -187,75 +187,89 @@ export default function OverviewPage({ activeRoute, onOpenCharterModal, onNaviga
         </div>
       </div>
 
-      {/* 2. Hero Recommendation Block (Focal Point with Orange Accent) */}
-      <div className="relative card-recommended p-6 overflow-hidden">
+      {/* 2. Hero Recommendation Block (Compact & Streamlined) */}
+      <div className="relative card-recommended p-4 sm:p-5 overflow-hidden">
         {/* Glow corner accent */}
-        <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#F47B3A]/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-12 -right-12 w-40 h-40 bg-[#F47B3A]/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-          <div className="space-y-3">
-            <div className="flex items-center space-x-2.5">
-              <span className="px-2.5 py-1 rounded bg-[#F47B3A] text-white text-xs font-hud font-bold tracking-wider uppercase shadow-md shadow-[#F47B3A]/30">
+        <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+          <div className="space-y-2.5 flex-1 min-w-0">
+            {/* Badges Bar */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded bg-[#F47B3A] text-white text-[11px] font-hud font-bold tracking-wider uppercase shadow-sm">
                 SYSTEM RECOMMENDATION
               </span>
-              <span className="text-xs font-mono-num text-[#4FA69A] bg-[#4FA69A]/10 border border-[#4FA69A]/30 px-2 py-0.5 rounded">
+              <span className="text-[11px] font-mono-num text-[#4FA69A] bg-[#4FA69A]/10 border border-[#4FA69A]/30 px-2 py-0.5 rounded font-semibold">
                 {heroDecision.forecastConfidencePct}% CONFIDENCE
               </span>
-              <span className="text-xs font-mono-num text-[#DCE5E7] bg-[#20343C] border border-[#30454D] px-2 py-0.5 rounded hidden sm:inline-block">
+              <span className="text-[11px] font-mono-num text-[#DCE5E7] bg-[#20343C] border border-[#30454D] px-2 py-0.5 rounded hidden sm:inline-block">
                 FEASIBILITY: 100% COMPLIANT
               </span>
             </div>
 
-            <div className="flex items-baseline space-x-4">
-              <span className="text-4xl sm:text-5xl">{heroDecision.recommendedVesselIcon}</span>
-              <div>
-                <h2 className="text-2xl sm:text-3xl font-hud font-bold text-white tracking-wide uppercase">
+            {/* Vessel & Route Title */}
+            <div className="flex items-center space-x-3">
+              {heroDecision.recommendedVesselIcon && (
+                <span className="text-3xl shrink-0">{heroDecision.recommendedVesselIcon}</span>
+              )}
+              <div className="min-w-0">
+                <h2 className="text-xl sm:text-2xl font-hud font-bold text-white tracking-wide uppercase truncate">
                   {heroDecision.recommendedVesselName}
                 </h2>
-                <p className="text-xs sm:text-sm text-[#82949A] mt-0.5">
-                  Route: {activeRoute.originPort} → {activeRoute.destinationPort} ({activeRoute.voyageDistanceNM.toLocaleString()} NM)
+                <p className="text-xs text-[#82949A] truncate">
+                  Route: {activeRoute.originPort?.split('(')[0]?.trim()} → {activeRoute.destinationPort?.split('(')[0]?.trim()} ({activeRoute.voyageDistanceNM?.toLocaleString()} NM)
                 </p>
               </div>
             </div>
 
-            {/* Charter Timing Action Banner */}
-            <div className="inline-flex items-center space-x-2.5 bg-[#20343C]/90 border border-[#F47B3A]/50 rounded-lg px-3.5 py-2">
-              <Clock className="w-4 h-4 text-[#F47B3A] shrink-0" />
-              <div className="text-xs sm:text-sm text-[#DCE5E7]">
-                <strong className="text-[#F47B3A] font-bold font-hud uppercase tracking-wide">
-                  {heroDecision.charterTimingAction}
-                </strong>
-                <span className="text-[#82949A] ml-2 font-mono-num">({heroDecision.timingWindowDates})</span>
+            {/* Timing & Contract Badges Row */}
+            <div className="flex flex-wrap items-center gap-2 pt-0.5">
+              <div className="inline-flex items-center space-x-2 bg-[#20343C]/90 border border-[#F47B3A]/50 rounded-md px-2.5 py-1 text-xs">
+                <Clock className="w-3.5 h-3.5 text-[#F47B3A] shrink-0" />
+                <span className="font-bold text-[#F47B3A] font-hud uppercase">{heroDecision.charterTimingAction}</span>
+                <span className="text-[#82949A] font-mono-num text-[11px]">({heroDecision.timingWindowDates})</span>
               </div>
+
+              {heroDecision.recommendedContractType && (
+                <div className="inline-flex items-center space-x-2 bg-[#20343C]/90 border border-[#4FA69A]/50 rounded-md px-2.5 py-1 text-xs">
+                  <Package className="w-3.5 h-3.5 text-[#4FA69A] shrink-0" />
+                  <span className="font-bold text-[#4FA69A] font-hud uppercase">
+                    {heroDecision.recommendedContractType === 'spot' ? 'Spot Voyage Charter' :
+                     heroDecision.recommendedContractType === 'time' ? 'Time Charter (Period)' :
+                     'Multi-voyage COA'}
+                  </span>
+                </div>
+              )}
             </div>
 
-            <p className="text-xs text-[#82949A] max-w-2xl leading-relaxed">
-              {heroDecision.timingRationale}
+            {/* Executive Rationale Line */}
+            <p className="text-xs text-[#82949A] max-w-2xl leading-relaxed pt-0.5 line-clamp-2">
+              {heroDecision.timingRationale} {heroDecision.contractTypeRationale ? `· ${heroDecision.contractTypeRationale}` : ''}
             </p>
           </div>
 
           {/* Primary CTA & Decision Summary */}
-          <div className="flex flex-col sm:flex-row lg:flex-col items-start lg:items-end justify-between gap-4 shrink-0 lg:border-l lg:border-[#30454D]/80 lg:pl-8">
+          <div className="flex flex-col sm:flex-row lg:flex-col items-start lg:items-end justify-between gap-3 shrink-0 lg:border-l lg:border-[#30454D]/80 lg:pl-6">
             <div className="text-left lg:text-right">
-              <div className="text-[11px] font-hud uppercase tracking-wider text-[#82949A]">EXPECTED TOTAL COST</div>
-              <div className="text-3xl sm:text-4xl font-mono-num font-bold text-white tracking-tight">
-                ₹{heroDecision.expectedTotalCostCr} <span className="text-lg font-normal text-[#82949A]">Cr</span>
+              <div className="text-[10px] font-hud uppercase tracking-wider text-[#82949A]">EXPECTED TOTAL COST</div>
+              <div className="text-2xl sm:text-3xl font-mono-num font-bold text-white tracking-tight">
+                ₹{heroDecision.expectedTotalCostCr} <span className="text-sm font-normal text-[#82949A]">Cr</span>
               </div>
-              <div className="text-xs font-mono-num text-[#4FA69A] mt-0.5">
-                ~${heroDecision.expectedTotalCostUSD.toLocaleString()} USD · Lowest Total in Class
+              <div className="text-[11px] font-mono-num text-[#4FA69A]">
+                ~${heroDecision.expectedTotalCostUSD?.toLocaleString()} USD · Lowest Total
               </div>
             </div>
 
             <button
               onClick={onOpenCharterModal}
-              className="w-full sm:w-auto px-6 py-3 bg-[#F47B3A] hover:bg-[#FF9A5A] text-white text-xs font-hud font-bold tracking-wider uppercase rounded-lg shadow-xl shadow-[#F47B3A]/30 hover:shadow-[#F47B3A]/50 transition-all transform hover:-translate-y-0.5 flex flex-col items-center justify-center space-y-0.5 group cursor-pointer"
+              className="w-full sm:w-auto px-5 py-2.5 bg-[#F47B3A] hover:bg-[#FF9A5A] text-white text-xs font-hud font-bold tracking-wider uppercase rounded-lg shadow-lg shadow-[#F47B3A]/25 hover:shadow-[#F47B3A]/40 transition-all transform hover:-translate-y-0.5 flex flex-col items-center justify-center space-y-0.5 group cursor-pointer"
             >
               <div className="flex items-center space-x-2">
                 <span>INITIATE CHARTER FIXTURE</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </div>
-              <span className="text-[10px] font-mono-num font-normal opacity-90">
-                Target Spot Rate: ~${freightForecast.troughRate || '27.90'}/MT (Indicative Level)
+              <span className="text-[9px] font-mono-num font-normal opacity-90">
+                Target Rate: ~${freightForecast.troughRate || '27.90'}/MT
               </span>
             </button>
           </div>
@@ -434,12 +448,9 @@ export default function OverviewPage({ activeRoute, onOpenCharterModal, onNaviga
               </h3>
             </div>
 
-            <div className="p-3 bg-[#0D1A20] rounded-lg border border-[#30454D] mb-3.5">
+            <div className="p-2.5 bg-[#0D1A20] rounded-lg border border-[#30454D] mb-3">
               <p className="text-xs font-semibold text-[#F47B3A] font-hud uppercase tracking-wide">
                 {whyThisVessel.headline}
-              </p>
-              <p className="text-xs text-[#DCE5E7] mt-1 leading-relaxed">
-                {heroDecision.executiveSummary}
               </p>
             </div>
 

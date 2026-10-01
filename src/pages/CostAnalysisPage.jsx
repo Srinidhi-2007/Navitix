@@ -8,12 +8,18 @@ import {
   TrendingDown, 
   Info,
   ShieldCheck,
-  Ship
+  Ship,
+  Package,
+  XCircle,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
 export default function CostAnalysisPage({ activeRoute, onOpenCharterModal }) {
   const { costAnalysis, candidateVessels, heroDecision } = activeRoute;
   const [activeCurrency, setActiveCurrency] = useState('INR'); // INR (₹ Cr) or USD ($)
+  const [showContractTypes, setShowContractTypes] = useState(true);
 
   const recVessel = candidateVessels.find(v => v.id === heroDecision.recommendedVesselId) || candidateVessels[0];
 
@@ -150,81 +156,136 @@ export default function CostAnalysisPage({ activeRoute, onOpenCharterModal }) {
           </div>
           {(() => {
             const totalRow = costAnalysis.comparisonMatrix?.find(r => r.isTotal);
-            const nextBest = totalRow ? Math.min(
-              ...[totalRow.supramax, totalRow.handysize].filter(v => v !== undefined)
-            ) : null;
-            const savings = totalRow && nextBest ? (nextBest - totalRow.panamax).toFixed(2) : null;
-            return savings ? (
+            if (!totalRow) return null;
+            const recKey = heroDecision.recommendedVesselId;
+            const recCost = totalRow[recKey];
+            if (typeof recCost !== 'number') return null;
+            const others = ['panamax','supramax','handysize']
+              .filter(k => k !== recKey && typeof totalRow[k] === 'number')
+              .map(k => totalRow[k]);
+            if (!others.length) return null;
+            const nextBest = Math.min(...others);
+            const diff = recCost - nextBest; // positive = rec is more expensive
+            const absDiff = Math.abs(diff).toFixed(2);
+            const pct = ((Math.abs(diff) / recCost) * 100).toFixed(1);
+            if (diff > 0) {
+              // Recommended is more expensive — show premium, not savings
+              return (
+                <span className="text-xs font-mono-num text-[#D9A441] bg-[#D9A441]/10 border border-[#D9A441]/30 px-2.5 py-1 rounded">
+                  {heroDecision.recommendedVesselName?.split(' /')[0]}: +₹{absDiff} Cr (+{pct}%) vs next-best
+                </span>
+              );
+            }
+            return (
               <span className="text-xs font-mono-num text-[#4FA69A] bg-[#4FA69A]/10 border border-[#4FA69A]/30 px-2.5 py-1 rounded">
-                {heroDecision.recommendedVesselName?.split(' /')[0]}: ₹{savings} Cr SAVINGS
+                {heroDecision.recommendedVesselName?.split(' /')[0]}: −₹{absDiff} Cr (−{pct}%) SAVINGS
               </span>
-            ) : null;
+            );
           })()}
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-[#30454D] text-[11px] font-hud uppercase tracking-wider text-[#82949A]">
-                <th className="py-3 px-4">EXPENSE COMPONENT</th>
-                <th className="py-3 px-4 bg-[#F47B3A]/10 text-[#F47B3A] border-x border-[#F47B3A]/30">
-                  <Award className="w-3.5 h-3.5 inline mr-1" /> {heroDecision.recommendedVesselName?.split(' /')[0].toUpperCase()} (RECOMMENDED)
-                </th>
-                <th className="py-3 px-4">SUPRAMAX</th>
-                <th className="py-3 px-4">HANDYSIZE (2X SPLIT)</th>
-                <th className="py-3 px-4 text-right">OPTIMAL ADVANTAGE</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#30454D]/60 text-xs font-mono-num">
-              {costAnalysis.comparisonMatrix.map((row, idx) => {
-                const isTotal = row.isTotal;
-                const isMeta = row.isMetadata;
-                return (
-                  <tr
-                    key={idx}
-                    className={`transition-colors ${
-                      isTotal
-                        ? 'bg-[#20343C]/80 font-bold text-white text-sm border-t-2 border-[#F47B3A]'
-                        : isMeta
-                        ? 'bg-[#16262D]/40 text-[#4FA69A]'
-                        : 'hover:bg-[#16262D]/60 text-[#DCE5E7]'
-                    }`}
-                  >
-                    <td className={`py-3.5 px-4 ${isTotal ? 'font-hud uppercase tracking-wider text-[#F47B3A]' : isMeta ? 'font-hud uppercase tracking-wider text-[11px]' : ''}`}>
-                      {row.item}
-                    </td>
-                    <td className={`py-3.5 px-4 bg-[#F47B3A]/10 border-x border-[#F47B3A]/30 ${
-                      isTotal ? 'text-[#F47B3A] font-extrabold text-base' : 'text-white'
-                    }`}>
-                      {isMeta ? row.panamax : (typeof row.panamax === 'number' ? (activeCurrency === 'INR' ? `₹${row.panamax.toFixed(2)} Cr` : `$${(row.panamax * 0.12).toFixed(2)}M`) : row.panamax)}
-                    </td>
-                    <td className="py-3.5 px-4 text-[#82949A]">
-                      {isMeta ? row.supramax : (typeof row.supramax === 'number' ? (activeCurrency === 'INR' ? `₹${row.supramax.toFixed(2)} Cr` : `$${(row.supramax * 0.12).toFixed(2)}M`) : row.supramax)}
-                    </td>
-                    <td className="py-3.5 px-4 text-[#82949A]">
-                      {isMeta ? row.handysize : (typeof row.handysize === 'number' ? (activeCurrency === 'INR' ? `₹${row.handysize.toFixed(2)} Cr` : `$${(row.handysize * 0.12).toFixed(2)}M`) : row.handysize)}
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
-                      {isTotal ? (
-                        <span className="text-[#4FA69A] font-bold">
-                          {typeof row.supramax === 'number' && typeof row.panamax === 'number'
-                            ? `-₹${(row.supramax - row.panamax).toFixed(2)} Cr (-${((row.supramax - row.panamax) / row.supramax * 100).toFixed(1)}%)`
-                            : '—'}
-                        </span>
-                      ) : isMeta ? (
-                        <span className="text-[10px] text-[#82949A] font-hud uppercase">COST BASIS</span>
-                      ) : (
-                        <span className="text-[#82949A] text-[11px]">
-                          {typeof row.panamax === 'number' && typeof row.supramax === 'number' && row.panamax < row.supramax ? 'Lowest' : 'Standard'}
-                        </span>
-                      )}
-                    </td>
+          {(() => {
+            // Derive column order: recommended vessel first, then others
+            const recKey = heroDecision.recommendedVesselId;
+            const allKeys = ['panamax', 'supramax', 'handysize'];
+            const otherKeys = allKeys.filter(k => k !== recKey);
+            const vesselLabel = (key) => {
+              const v = candidateVessels.find(c => c.id === key);
+              const name = v ? v.name.split(' /')[0].toUpperCase() : key.toUpperCase();
+              return v && v.voyageCount > 1 ? `${name} (${v.voyageCount}× SPLIT)` : name;
+            };
+            const fmtVal = (val) => {
+              if (typeof val !== 'number') return val ?? '—';
+              return activeCurrency === 'INR' ? `₹${val.toFixed(2)} Cr` : `$${(val * 0.12).toFixed(2)}M`;
+            };
+
+            return (
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-[#30454D] text-[11px] font-hud uppercase tracking-wider text-[#82949A]">
+                    <th className="py-3 px-4">EXPENSE COMPONENT</th>
+                    <th className="py-3 px-4 bg-[#F47B3A]/10 text-[#F47B3A] border-x border-[#F47B3A]/30">
+                      <Award className="w-3.5 h-3.5 inline mr-1" /> {vesselLabel(recKey)} (RECOMMENDED)
+                    </th>
+                    {otherKeys.map(k => (
+                      <th key={k} className="py-3 px-4">{vesselLabel(k)}</th>
+                    ))}
+                    <th className="py-3 px-4 text-right">OPTIMAL ADVANTAGE</th>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                </thead>
+                <tbody className="divide-y divide-[#30454D]/60 text-xs font-mono-num">
+                  {costAnalysis.comparisonMatrix.map((row, idx) => {
+                    const isTotal = row.isTotal;
+                    const isMeta = row.isMetadata;
+                    return (
+                      <tr
+                        key={idx}
+                        className={`transition-colors ${
+                          isTotal
+                            ? 'bg-[#20343C]/80 font-bold text-white text-sm border-t-2 border-[#F47B3A]'
+                            : isMeta
+                            ? 'bg-[#16262D]/40 text-[#4FA69A]'
+                            : 'hover:bg-[#16262D]/60 text-[#DCE5E7]'
+                        }`}
+                      >
+                        <td className={`py-3.5 px-4 ${isTotal ? 'font-hud uppercase tracking-wider text-[#F47B3A]' : isMeta ? 'font-hud uppercase tracking-wider text-[11px]' : ''}`}>
+                          {row.item}
+                        </td>
+                        {/* Recommended vessel column (highlighted) */}
+                        <td className={`py-3.5 px-4 bg-[#F47B3A]/10 border-x border-[#F47B3A]/30 ${
+                          isTotal ? 'text-[#F47B3A] font-extrabold text-base' : 'text-white'
+                        }`}>
+                          {isMeta ? row[recKey] : fmtVal(row[recKey])}
+                        </td>
+                        {/* Other vessel columns */}
+                        {otherKeys.map(k => (
+                          <td key={k} className="py-3.5 px-4 text-[#82949A]">
+                            {isMeta ? row[k] : fmtVal(row[k])}
+                          </td>
+                        ))}
+                        {/* Optimal advantage column */}
+                        <td className="py-3.5 px-4 text-right">
+                          {isTotal ? (
+                            (() => {
+                              const recVal = typeof row[recKey] === 'number' ? row[recKey] : null;
+                              if (recVal == null) return <span>—</span>;
+                              const others = otherKeys
+                                .filter(k => typeof row[k] === 'number')
+                                .map(k => row[k]);
+                              if (!others.length) return <span>—</span>;
+                              const nextBest = Math.min(...others);
+                              const diff = recVal - nextBest;
+                              const absDiff = Math.abs(diff).toFixed(2);
+                              const pct = ((Math.abs(diff) / recVal) * 100).toFixed(1);
+                              if (diff > 0) {
+                                return <span className="text-[#D9A441] font-bold">+₹{absDiff} Cr (+{pct}%) premium</span>;
+                              }
+                              return <span className="text-[#4FA69A] font-bold">−₹{absDiff} Cr (−{pct}%) savings</span>;
+                            })()
+                          ) : isMeta ? (
+                            <span className="text-[10px] text-[#82949A] font-hud uppercase">COST BASIS</span>
+                          ) : (
+                            <span className="text-[#82949A] text-[11px]">
+                              {(() => {
+                                const recVal = typeof row[recKey] === 'number' ? row[recKey] : null;
+                                const others = otherKeys
+                                  .filter(k => typeof row[k] === 'number')
+                                  .map(k => row[k]);
+                                return recVal != null && others.length && recVal <= Math.min(...others) ? 'Lowest' : 'Standard';
+                              })()}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            );
+          })()}
         </div>
+
       </div>
 
       {/* 3. Port Waiting / Idle Time Detail Section */}
@@ -248,7 +309,7 @@ export default function CostAnalysisPage({ activeRoute, onOpenCharterModal }) {
             <strong className="text-[#D9A441] font-hud uppercase tracking-wide mr-1.5">
               Financial Note:
             </strong>
-            Waiting time is strictly included in the total cost calculation above (₹{recVessel.costBreakdownCr?.portWaitingCr?.toFixed(2) ?? '1.34'} Cr allocated for {recVessel.waitingDays?.total ?? '3.2'} days waiting). Demurrage exposure is priced directly into the fixture appraisal.
+            Waiting time is strictly included in the total cost calculation above (₹{recVessel.costBreakdownCr?.waitingDemurrage?.toFixed(2) ?? '0.17'} Cr allocated for {recVessel.waitingDays?.total ?? '3.2'} days waiting at $5,000/day). Demurrage exposure is priced directly into the fixture appraisal.
           </p>
         </div>
 
@@ -349,6 +410,122 @@ export default function CostAnalysisPage({ activeRoute, onOpenCharterModal }) {
           </div>
         </div>
       </div>
+
+      {/* Contract Type Recommendation (New Section) */}
+      {heroDecision.contractTypeComparison && (
+        <div className="card-shell p-6 mt-6">
+          <div 
+            className="flex items-center justify-between cursor-pointer group"
+            onClick={() => setShowContractTypes(!showContractTypes)}
+          >
+            <div className="flex items-center space-x-3">
+              <Package className="w-5 h-5 text-[#F47B3A]" />
+              <h3 className="font-hud font-bold text-sm tracking-wider text-white uppercase group-hover:text-[#F47B3A] transition-colors">
+                CHARTER CONTRACT TYPE ANALYSIS
+              </h3>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className="text-xs font-mono-num text-[#82949A] hidden sm:inline-block">
+                RECOMMENDED: <strong className="text-[#4FA69A]">{heroDecision.recommendedContractType?.toUpperCase() || 'SPOT'}</strong>
+              </span>
+              {showContractTypes ? (
+                <ChevronUp className="w-5 h-5 text-[#82949A] group-hover:text-white" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-[#82949A] group-hover:text-white" />
+              )}
+            </div>
+          </div>
+
+          {showContractTypes && (
+            <div className="mt-6 pt-6 border-t border-[#30454D] grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {(() => {
+                const spotItem = heroDecision.contractTypeComparison.find(c => c.type === 'spot');
+                const spotCost = spotItem?.estimatedCostCr || heroDecision.expectedTotalCostCr;
+
+                return heroDecision.contractTypeComparison.map((contract, idx) => (
+                  <div 
+                    key={contract.type} 
+                    className={`relative rounded-xl p-5 border transition-all ${
+                      contract.isRecommended 
+                        ? 'bg-[#16262D] border-[#4FA69A] shadow-md shadow-[#4FA69A]/10' 
+                        : 'bg-[#0D1A20] border-[#30454D]'
+                    }`}
+                  >
+                    {contract.isRecommended && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-[#4FA69A] text-[#071014] text-[10px] font-hud font-bold uppercase rounded-full shadow-sm whitespace-nowrap">
+                        Best Commercial Fit
+                      </div>
+                    )}
+
+                    <div className="text-center mb-4">
+                      <h4 className={`text-sm font-hud font-bold uppercase ${contract.isRecommended ? 'text-[#4FA69A]' : 'text-[#DCE5E7]'}`}>
+                        {contract.label}
+                      </h4>
+                      
+                      <div className="mt-3">
+                        {contract.estimatedCostCr ? (
+                          <>
+                            <div className="text-2xl font-mono-num font-bold text-white">
+                              {activeCurrency === 'INR' ? `₹${contract.estimatedCostCr} Cr` : `$${contract.estimatedCostUSD?.toLocaleString()}`}
+                            </div>
+                            {contract.type !== 'spot' && spotCost && (
+                              <div className="text-[10px] font-mono-num text-[#82949A] mt-1">
+                                {contract.estimatedCostCr > spotCost ? '+' : ''}
+                                {(((contract.estimatedCostCr / spotCost) - 1) * 100).toFixed(1)}% vs Spot
+                              </div>
+                            )}
+                            {contract.note && (
+                              <div className="text-[10px] text-[#4FA69A] font-mono-num mt-1">
+                                {contract.note}
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <div className="text-sm font-mono-num font-medium text-[#82949A] py-2">
+                            {contract.note || "Volume Dependent"}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <div className="text-[10px] font-hud uppercase tracking-wider text-[#4FA69A] mb-2 flex items-center space-x-1.5">
+                          <CheckCircle2 className="w-3 h-3" />
+                          <span>Advantages</span>
+                        </div>
+                        <ul className="space-y-1.5">
+                          {contract.pros.map((pro, i) => (
+                            <li key={i} className="text-xs text-[#DCE5E7] flex items-start space-x-2">
+                              <span className="text-[#4FA69A] mt-0.5">•</span>
+                              <span>{pro}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div>
+                        <div className="text-[10px] font-hud uppercase tracking-wider text-[#D9573F] mb-2 flex items-center space-x-1.5">
+                          <XCircle className="w-3 h-3" />
+                          <span>Drawbacks</span>
+                        </div>
+                        <ul className="space-y-1.5">
+                          {contract.cons.map((con, i) => (
+                            <li key={i} className="text-xs text-[#82949A] flex items-start space-x-2">
+                              <span className="text-[#D9573F] mt-0.5">•</span>
+                              <span>{con}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                ));
+              })()}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

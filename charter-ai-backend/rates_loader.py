@@ -55,13 +55,22 @@ def _build_synthetic(out_path: Path) -> pd.DataFrame:
 
 
 def _clean_raw(raw_path: Path, out_path: Path) -> pd.DataFrame:
-    """Reads rates_raw.csv (date, value columns) and writes the standard rates.csv."""
-    raw = pd.read_csv(raw_path, parse_dates=["date"])
-    if "value" not in raw.columns:
-        raise ValueError("rates_raw.csv must have a 'value' column")
+    """Reads rates_raw.csv (supporting Date/Price or date/value columns) and writes standard rates.csv."""
+    raw = pd.read_csv(raw_path)
+    if "Date" in raw.columns and "Price" in raw.columns:
+        date_col = "Date"
+        val_series = raw["Price"].astype(str).str.replace(",", "").astype(float)
+        date_series = pd.to_datetime(raw[date_col], format="%m/%d/%Y")
+    elif "date" in raw.columns and "value" in raw.columns:
+        date_col = "date"
+        val_series = raw["value"].astype(float)
+        date_series = pd.to_datetime(raw[date_col])
+    else:
+        raise ValueError("rates_raw.csv must have either ('Date', 'Price') or ('date', 'value') columns")
+
     df = pd.DataFrame({
-        "date":        raw["date"].dt.strftime("%Y-%m-%d"),
-        "index_value": raw["value"].round(1),
+        "date":        date_series.dt.strftime("%Y-%m-%d"),
+        "index_value": val_series.round(1),
         "source":      "real",
     })
     df = df.dropna().sort_values("date").reset_index(drop=True)

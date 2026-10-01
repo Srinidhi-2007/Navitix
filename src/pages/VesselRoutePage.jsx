@@ -80,48 +80,7 @@ export default function VesselRoutePage({
         </div>
       )}
 
-      {/* 3 Quick Scenario Buttons from getRoutes() */}
-      <div className="card-shell p-4 bg-[#0D1A20] border-[#30454D] space-y-2.5">
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] font-hud uppercase tracking-wider text-[#82949A] flex items-center gap-1.5 font-bold">
-            <Sparkles className="w-3.5 h-3.5 text-[#F47B3A]" />
-            <span>QUICK SCENARIOS (ROUTES.JSON BENCHMARKS)</span>
-          </span>
-          <span className="text-[10px] font-mono text-[#82949A]">Click to auto-populate voyage query</span>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-          {routesList.slice(0, 3).map((route) => {
-            const isSelected = originPortId === route.originPortId && destPortId === route.destinationPortId;
-            return (
-              <button
-                key={route.id}
-                type="button"
-                onClick={() => applyScenario ? applyScenario(route) : onSelectRoute?.(route.id)}
-                className={`p-3 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                  isSelected
-                    ? 'bg-[#F47B3A]/10 border-[#F47B3A] text-white'
-                    : 'bg-[#16262D] border-[#30454D] hover:border-[#4FA69A] text-[#DCE5E7]'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-hud font-bold text-white uppercase tracking-wider">
-                    {route.originPortId} &rarr; {route.destinationPortId}
-                  </span>
-                  {isSelected && (
-                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-[#F47B3A] text-black">
-                      ACTIVE
-                    </span>
-                  )}
-                </div>
-                <div className="text-[11px] font-mono text-[#82949A]">
-                  {(route.defaultCargoMT || 50000).toLocaleString()} MT &middot; {route.defaultCargoType || 'Bulk Cargo'}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
 
       {/* 1. Input Section (Interactive Voyage Controls) */}
       <div className="card-shell p-6 space-y-4">
@@ -267,10 +226,11 @@ export default function VesselRoutePage({
               CHARTER CONTRACT TYPE
             </label>
             <select
-              value={requestPayload.contractType || 'spot'}
+              value={requestPayload.contractType || 'auto'}
               onChange={(e) => handleFieldChange('contractType', e.target.value)}
               className="w-full bg-[#0D1A20] border border-[#30454D] rounded-lg px-3 py-2 text-xs font-mono-num text-[#DCE5E7] focus:border-[#F47B3A] focus:outline-none cursor-pointer"
             >
+              <option value="auto">Auto (Backend Recommendation)</option>
               <option value="spot">Spot Charter (Single Voyage)</option>
               <option value="time">Time Charter (Period Hire)</option>
               <option value="multi">Multi-Voyage / COA (Contract of Affreightment)</option>
@@ -499,17 +459,33 @@ export default function VesselRoutePage({
               VESSEL SUITABILITY AT LOADING BERTH
             </div>
             <div className="space-y-1.5">
-              {['handysize', 'supramax', 'panamax', 'capesize'].map((typeKey) => {
+              {(candidateVessels.length > 0 ? candidateVessels : [
+                { id: 'handysize', name: 'Handysize' },
+                { id: 'supramax', name: 'Supramax' },
+                { id: 'panamax', name: 'Panamax' },
+                { id: 'capesize', name: 'Capesize' }
+              ]).map((vessel) => {
+                const typeKey = vessel.id;
                 const suit = loadingPort.suitability?.[typeKey];
                 const isPass = suit ? suit.feasible : true;
+                const reason = suit?.reason || 'Compliant with loading berth limits';
                 return (
                   <div key={typeKey} className="flex items-center justify-between p-2 rounded bg-[#0D1A20] border border-[#30454D] text-xs">
                     <span className="font-hud uppercase tracking-wider text-[#DCE5E7] font-semibold">
-                      {typeKey}
+                      {vessel.name || typeKey}
                     </span>
-                    <span className="flex items-center space-x-1 text-[#4FA69A] font-mono-num">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>{suit?.reason || 'Compliant with loading berth limits'}</span>
+                    <span className={`flex items-center space-x-1 font-mono-num ${isPass ? 'text-[#4FA69A]' : 'text-[#D9573F] font-bold'}`}>
+                      {isPass ? (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Feasible ({reason.split(';')[0]})</span>
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="w-3.5 h-3.5" />
+                          <span>RESTRICTED ({reason.split('.')[0]})</span>
+                        </>
+                      )}
                     </span>
                   </div>
                 );

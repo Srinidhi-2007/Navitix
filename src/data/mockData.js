@@ -41,7 +41,65 @@ export const ROUTE_PRESETS = [
       riskLevel: "Low",
       riskColor: "teal",
       forecastConfidencePct: 87,
-      executiveSummary: "Panamax provides the lowest expected total cost while satisfying port draft constraints and maintaining 87% forecast confidence."
+      executiveSummary: "Panamax provides the lowest expected total cost while satisfying port draft constraints and maintaining 87% forecast confidence.",
+      recommendedContractType: "spot",
+      contractTypeRationale: "Spot voyage recommended — freight rate trajectory shows -5.1% movement to trough; spot charter captures full downside benefit without commitment beyond this voyage.",
+      contractTypeComparison: [
+        {
+          type: "spot",
+          label: "Spot Voyage Charter",
+          isRecommended: true,
+          estimatedCostCr: 14.21,
+          estimatedCostUSD: 1709000,
+          pros: [
+            "Captures forecast trough if rates decline",
+            "No commitment beyond this single voyage",
+            "Full flexibility on vessel and timing"
+          ],
+          cons: [
+            "Exposed to rate spikes if trough shifts later",
+            "No rate certainty for future shipments"
+          ],
+          riskLevel: "Low"
+        },
+        {
+          type: "time",
+          label: "Time Charter",
+          isRecommended: false,
+          estimatedCostCr: 15.35,
+          estimatedCostUSD: 1845000,
+          pros: [
+            "Locks in current rate for charter duration",
+            "Hedges against volatility and rate spikes",
+            "Vessel exclusively available for period"
+          ],
+          cons: [
+            "~8% premium vs spot rate (ASSUMPTION)",
+            "Idle-time risk if no return cargo",
+            "Longer commitment required"
+          ],
+          riskLevel: "Low"
+        },
+        {
+          type: "multi",
+          label: "Multi-voyage COA",
+          isRecommended: false,
+          estimatedCostCr: 13.50,
+          estimatedCostUSD: 1622596,
+          pros: [
+            "Volume discount across multiple shipments (5% discount)",
+            "Schedule certainty with fixed liftings",
+            "Reduced per-voyage negotiation overhead"
+          ],
+          cons: [
+            "Requires committed cargo volume over contract period",
+            "Less flexibility to adjust timing per voyage",
+            "Penalty clauses for under-shipment"
+          ],
+          riskLevel: "Low",
+          note: "5% volume discount applied for committed multi-voyage liftings"
+        }
+      ]
     },
 
     kpis: [
@@ -318,7 +376,7 @@ export const ROUTE_PRESETS = [
           waitingDays: "2.0 Days",
           waitingAssumption: "Immediate berth availability upon NOR tender at Paradip",
           totalCostCr: "₹13.15 Cr",
-          costDelta: "-₹1.07 Cr (-7.5%)",
+          costDelta: "−₹1.07 Cr (−7.5%)",
           color: "#4FA69A",
           probability: "25% Probability"
         },
@@ -593,7 +651,7 @@ export const ROUTE_PRESETS = [
         { name: "Vessel Availability", level: "Low", statusColor: "#4FA69A", score: "12 Prompt Ships", detail: "High Pacific tonnage" }
       ],
       scenarios: [
-        { id: "best", name: "Best Case", freightRate: "$21.00/MT", waitingDays: "1.8 Days", totalCostCr: "₹12.10 Cr", costDelta: "-₹0.75 Cr (-5.8%)", color: "#4FA69A" },
+        { id: "best", name: "Best Case", freightRate: "$21.00/MT", waitingDays: "1.8 Days", totalCostCr: "₹12.10 Cr", costDelta: "−₹0.75 Cr (−5.8%)", color: "#4FA69A" },
         { id: "expected", name: "Expected Case", freightRate: "$22.10/MT", waitingDays: "2.4 Days", totalCostCr: "₹12.85 Cr", costDelta: "Baseline Reference", color: "#F47B3A", isBaseline: true },
         { id: "worst", name: "Worst Case", freightRate: "$24.50/MT", waitingDays: "4.0 Days", totalCostCr: "₹14.15 Cr", costDelta: "+₹1.30 Cr (+10.1%)", color: "#D9573F" }
       ],
@@ -836,7 +894,7 @@ export const ROUTE_PRESETS = [
         { name: "Vessel Availability", level: "Low", statusColor: "#4FA69A", score: "8 Prompt Ships", detail: "Adequate Ultramax availability" }
       ],
       scenarios: [
-        { id: "best", name: "Best Case", freightRate: "$35.20/MT", waitingDays: "3.0 Days", totalCostCr: "₹15.20 Cr", costDelta: "-₹1.25 Cr (-7.6%)", color: "#4FA69A" },
+        { id: "best", name: "Best Case", freightRate: "$35.20/MT", waitingDays: "3.0 Days", totalCostCr: "₹15.20 Cr", costDelta: "−₹1.25 Cr (−7.6%)", color: "#4FA69A" },
         { id: "expected", name: "Expected Case", freightRate: "$36.80/MT", waitingDays: "4.1 Days", totalCostCr: "₹16.45 Cr", costDelta: "Baseline Reference", color: "#F47B3A", isBaseline: true },
         { id: "worst", name: "Worst Case", freightRate: "$39.50/MT", waitingDays: "6.5 Days", totalCostCr: "₹18.40 Cr", costDelta: "+₹1.95 Cr (+11.8%)", color: "#D9573F" }
       ],

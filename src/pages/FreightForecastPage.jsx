@@ -30,38 +30,7 @@ export default function FreightForecastPage({ activeRoute, onOpenCharterModal })
   } else if (timeHorizon === '14D') {
     points = rawPoints.filter(p => p.dayOffset <= 14);
   } else if (timeHorizon === '30D') {
-    const maxOffset = Math.max(...rawPoints.map(p => p.dayOffset), 14);
-    if (maxOffset < 30) {
-      const lastForecastPoint = rawPoints.find(p => p.dayOffset === maxOffset) || rawPoints[rawPoints.length - 1];
-      const baseRate = lastForecastPoint ? (lastForecastPoint.forecastRate || lastForecastPoint.actualRate || 28.5) : 28.5;
-      const baseDate = new Date();
-      
-      const extensions = [];
-      for (let offset = maxOffset + 2; offset <= 30; offset += 3) {
-        const d = new Date(baseDate);
-        d.setDate(d.getDate() + offset);
-        const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
-        // Macro trend cyclical curve + expanding confidence interval
-        const cycleOffset = Math.sin((offset - 14) * 0.25) * 1.2 + (offset - 14) * 0.04;
-        const fRate = Number((baseRate + cycleOffset).toFixed(2));
-        const spread = 1.8 + (offset - 14) * 0.14;
-        
-        extensions.push({
-          dayOffset: offset,
-          date: dateStr,
-          actualRate: null,
-          forecastRate: fRate,
-          lowerBand: Number((fRate - spread).toFixed(2)),
-          upperBand: Number((fRate + spread).toFixed(2)),
-          benchmarkBPI: Number((fRate + 0.35).toFixed(2)),
-          isHistorical: false,
-          isCurrent: false,
-          isTrough: false,
-          inOptimalWindow: offset >= 20 && offset <= 24
-        });
-      }
-      points = [...rawPoints, ...extensions];
-    }
+    points = rawPoints.filter(p => p.dayOffset <= 30);
   }
 
   // Calculate dynamic trough within current horizon
@@ -148,7 +117,7 @@ export default function FreightForecastPage({ activeRoute, onOpenCharterModal })
             FREIGHT RATE PREDICTIVE FORECAST
           </h2>
           <p className="text-xs text-[#82949A]">
-            Ensemble ARIMA(2,1,2) + XGBoost rate trajectory with 95% confidence intervals and BPI market benchmark.
+            Ensemble ARIMA(2,1,2) + XGBoost rate trajectory with 95% confidence intervals and {freightForecast.benchmarkName || 'market benchmark'}.
           </p>
         </div>
 
@@ -224,7 +193,7 @@ export default function FreightForecastPage({ activeRoute, onOpenCharterModal })
             {showBenchmark && (
               <div className="flex items-center space-x-2">
                 <span className="w-5 h-0.5 bg-[#82949A]/80 border-b border-dashed border-[#82949A] inline-block" />
-                <span className="text-[#DCE5E7] font-semibold">Baltic Panamax Index (BPI)</span>
+                <span className="text-[#DCE5E7] font-semibold">{freightForecast.benchmarkName || 'Market Benchmark'}</span>
               </div>
             )}
           </div>
@@ -489,7 +458,7 @@ export default function FreightForecastPage({ activeRoute, onOpenCharterModal })
                   <span className="text-[#82949A]">BPI Benchmark Index:</span>
                   <span className="text-[#4FA69A] font-bold">
                     ${hoveredPoint.benchmarkBPI > 100 ? (hoveredPoint.benchmarkBPI / BPI_DIVISOR).toFixed(2) : hoveredPoint.benchmarkBPI}/MT
-                    <span className="text-[10px] text-[#82949A] ml-1">({hoveredPoint.benchmarkBPI > 100 ? hoveredPoint.benchmarkBPI : Math.round(hoveredPoint.benchmarkBPI * BPI_DIVISOR)} BPI)</span>
+                    <span className="text-[10px] text-[#82949A] ml-1">({hoveredPoint.benchmarkBPI > 100 ? hoveredPoint.benchmarkBPI : Math.round(hoveredPoint.benchmarkBPI * BPI_DIVISOR)} Index)</span>
                   </span>
                 </div>
               )}
@@ -503,8 +472,8 @@ export default function FreightForecastPage({ activeRoute, onOpenCharterModal })
             <div className="flex items-center space-x-2">
               <Activity className="w-4 h-4 text-[#4FA69A] shrink-0" />
               <div>
-                <span className="font-hud font-bold text-[#DCE5E7] uppercase">BALTIC PANAMAX INDEX (BPI 4TC BENCHMARK)</span>
-                <p className="text-[11px] text-[#82949A]">Global Panamax 4-Timecharter Average Index: <strong className="text-[#4FA69A]">1,548 BPI</strong> (~$29.40/MT equivalent). Route spread: <strong>+$0.20/MT premium</strong>.</p>
+                <span className="font-hud font-bold text-[#DCE5E7] uppercase">{freightForecast.benchmarkName || 'MARKET BENCHMARK'}</span>
+                <p className="text-[11px] text-[#82949A]">Global {activeRoute.heroDecision?.recommendedVesselName || 'Vessel'} Average Index: <strong className="text-[#4FA69A]">1,548</strong> (~$29.40/MT equivalent). Route spread: <strong>+$0.20/MT premium</strong>.</p>
               </div>
             </div>
             <div className="flex items-center space-x-3 text-[11px] font-mono-num shrink-0 bg-[#16262D] px-2.5 py-1 rounded border border-[#30454D]">

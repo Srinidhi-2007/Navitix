@@ -75,7 +75,67 @@
       "riskLevel": "Low",
       "riskColor": "teal",
       "forecastConfidencePct": 87,
-      "executiveSummary": "Panamax provides the lowest expected total cost while satisfying port draft constraints."
+      "executiveSummary": "Panamax provides the lowest expected total cost while satisfying port draft constraints.",
+      "recommendedContractType": "spot",
+      "contractTypeRationale": "Spot voyage recommended — freight trajectory shows declining movement to trough; spot charter captures the full downside benefit without commitment beyond this voyage.",
+      "contractTypeComparison": [
+        {
+          "type": "spot",
+          "label": "Spot Voyage Charter",
+          "isRecommended": true,
+          "estimatedCostCr": 14.22,
+          "estimatedCostUSD": 1709892,
+          "pros": [
+            "Captures forecast trough if rates decline",
+            "No commitment beyond this single voyage",
+            "Full flexibility on vessel and timing"
+          ],
+          "cons": [
+            "Exposed to rate spikes if trough shifts later",
+            "No rate certainty for future shipments"
+          ],
+          "riskLevel": "Low",
+          "note": null
+        },
+        {
+          "type": "time",
+          "label": "Time Charter",
+          "isRecommended": false,
+          "estimatedCostCr": 15.36,
+          "estimatedCostUSD": 1846682,
+          "pros": [
+            "Locks in current rate for charter duration",
+            "Hedges against volatility and rate spikes",
+            "Vessel exclusively available for period"
+          ],
+          "cons": [
+            "~8% premium vs spot rate (ASSUMPTION)",
+            "Idle-time risk if no return cargo",
+            "Longer commitment required"
+          ],
+          "riskLevel": "Low",
+          "note": null
+        },
+        {
+          "type": "multi",
+          "label": "Multi-voyage COA",
+          "isRecommended": false,
+          "estimatedCostCr": null,
+          "estimatedCostUSD": null,
+          "pros": [
+            "Volume discount across multiple shipments",
+            "Schedule certainty with fixed liftings",
+            "Reduced per-voyage negotiation overhead"
+          ],
+          "cons": [
+            "Requires committed cargo volume over contract period",
+            "Less flexibility to adjust timing per voyage",
+            "Penalty clauses for under-shipment"
+          ],
+          "riskLevel": "N/A",
+          "note": "Requires contract duration > 45 days to evaluate"
+        }
+      ]
     },
     "kpis": [
       {

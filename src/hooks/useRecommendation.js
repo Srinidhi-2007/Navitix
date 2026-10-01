@@ -193,28 +193,13 @@ export function useRecommendation(initialRouteId = DEFAULT_ROUTE_ID) {
     }
   }, []);
 
-  // Debounced fetch trigger (400ms)
+  // Initial load only
   useEffect(() => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
-
-    timerRef.current = setTimeout(() => {
-      fetchRecommendation(requestPayload, activeRouteId);
-    }, 400);
-
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-    };
-  }, [requestPayload, activeRouteId, fetchRecommendation]);
+    fetchRecommendation(PRESET_REQUEST_MAP[DEFAULT_ROUTE_ID], DEFAULT_ROUTE_ID);
+  }, [fetchRecommendation]);
 
   // Explicit evaluation trigger (runs immediately on button click, cancelling debounce)
   const evaluateCustomVoyage = useCallback((customPayload = null) => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
     const payloadToUse = customPayload || requestPayload;
     if (customPayload) {
       setRequestPayload(customPayload);
@@ -232,7 +217,8 @@ export function useRecommendation(initialRouteId = DEFAULT_ROUTE_ID) {
       originPortId: routeId.split('-')[0] || 'hay-point',
     };
     setRequestPayload(newPayload);
-  }, []);
+    fetchRecommendation(newPayload, routeId);
+  }, [fetchRecommendation]);
 
   // Update specific fields in the request
   const updateRequest = useCallback((fieldOrUpdates, maybeValue) => {

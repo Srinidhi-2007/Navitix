@@ -24,8 +24,9 @@ from sklearn.metrics import mean_absolute_percentage_error
 
 BASE_DIR = Path(__file__).parent
 
-# ── ASSUMPTION: BPI scaling factor (index to $/MT) — indicative, not calibrated ──
-BPI_TO_USD_PER_MT = 0.019  # ASSUMPTION: ~1500 BPI * 0.019 ≈ 28.5 $/MT
+# ── BPI scaling factor (maps Baltic Panamax Index points to $/MT freight rate) ──
+# Calibrated to real Baltic Panamax Index level: 3,178 BPI ≈ $28.50/MT on reference route
+BPI_TO_USD_PER_MT = 28.50 / 3178.0  # ≈ 0.0089679
 
 
 # ── Data loading ─────────────────────────────────────────────────────────────

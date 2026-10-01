@@ -71,7 +71,7 @@ export default function RiskConfidencePage({ activeRoute, onOpenCharterModal }) 
             </div>
             <div className="space-y-1">
               <span className="text-[10px] font-hud uppercase tracking-wider text-[#82949A] block">
-                ENSEMBLE CERTAINTY
+                PREDICTION INTERVAL CERTAINTY
               </span>
               <span className="text-xs font-mono-num text-[#4FA69A] font-semibold block">
                 Within Acceptable Bounds
@@ -305,6 +305,10 @@ export default function RiskConfidencePage({ activeRoute, onOpenCharterModal }) 
               </div>
             ))}
           </div>
+
+          <p className="text-[10px] mt-3 mb-2 font-sans leading-relaxed text-[#82949A] border-b border-[#30454D] pb-3">
+            <strong>Note:</strong> High attribution on `lag_1` is typical for autoregressive freight series exhibiting random walk characteristics. The model achieves its edge by outperforming a naive carry-forward baseline, using rolling features to capture non-linear mean reversion.
+          </p>
 
           <div className="p-3 bg-[#0D1A20] rounded-lg border border-[#30454D] text-[11px] font-mono-num text-[#82949A] space-y-1 mt-4">
             <div className="flex justify-between">

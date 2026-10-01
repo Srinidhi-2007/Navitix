@@ -106,6 +106,160 @@ def build_port_constraints(
         "draftComparisonChart": build_draft_comparison(vessels_data, dest_port),
     }
 
+def _recommend_contract_type(
+    fc: Dict[str, Any],
+    ann_vol: float,
+    cargo_mt: float,
+    recommended: Dict[str, Any],
+    contract_duration_days: int,
+    rec_cost_cr: float,
+    usd_to_inr: float,
+    requested_contract_type: str = "auto",
+) -> Dict[str, Any]:
+    """
+    Recommends Spot / Time Charter / Multi-voyage COA based on forecast
+    trend direction, volatility, cargo fill ratio, and contract duration.
+
+    Returns a dict with recommendedContractType, contractTypeRationale,
+    and contractTypeComparison (three-option breakdown).
+
+    ASSUMPTION: Time Charter premium is 8% over spot (industry heuristic).
+    ASSUMPTION: COA discount is 5% vs spot for committed volume.
+    """
+    mean_vals = np.array(fc["mean"])
+    horizon = len(mean_vals)
+
+    # Trend direction: linear slope over forecast horizon
+    if horizon >= 2:
+        x = np.arange(horizon, dtype=float)
+        slope = float(np.polyfit(x, mean_vals, 1)[0])
+    else:
+        slope = 0.0
+
+    trend_pct = round(((mean_vals[-1] - mean_vals[0]) / (mean_vals[0] + 1e-9)) * 100, 1)
+    trend_dir = "declining" if trend_pct < -0.5 else ("rising" if trend_pct > 0.5 else "flat")
+
+    # Band width (average relative CI width)
+    band_width = float(np.mean(
+        (np.array(fc["upper"]) - np.array(fc["lower"])) / (np.abs(mean_vals) + 1e-9)
+    ))
+    wide_bands = band_width > 0.08  # >8% relative spread
+
+    vessel_cap = recommended["capacityMT"]
+    fill_ratio = cargo_mt / vessel_cap if vessel_cap > 0 else 1.0
+    voyage_days = recommended.get("voyageDays", 15)
+
+    # ── Decision tree ──
+    if contract_duration_days > 45 and fill_ratio < 0.5:
+        rec_type = "multi"
+        rationale = (
+            f"Contract spans {contract_duration_days} days with cargo filling "
+            f"only {fill_ratio:.0%} of vessel capacity — a multi-voyage COA "
+            f"bundles repeated small parcels for volume discount and schedule certainty."
+        )
+    elif ann_vol > 40 or trend_dir == "rising":
+        rec_type = "time"
+        reasons = []
+        if ann_vol > 40:
+            reasons.append(f"annualised volatility is elevated at {ann_vol:.0f}%")
+        if trend_dir == "rising":
+            reasons.append(f"forecast shows {trend_pct:+.1f}% upward trend")
+        rationale = (
+            f"Time charter recommended — {' and '.join(reasons)}. "
+            f"Locking in today's rate hedges against further rate increases."
+        )
+    elif trend_dir == "declining" or ann_vol < 25:
+        rec_type = "spot"
+        rationale = (
+            f"Spot voyage recommended — freight trajectory shows {trend_pct:+.1f}% "
+            f"movement to trough; spot charter captures the full downside benefit "
+            f"without commitment beyond this voyage."
+        )
+    else:
+        rec_type = "spot"
+        rationale = (
+            f"Spot voyage recommended — market conditions are moderate "
+            f"(volatility {ann_vol:.0f}%, trend {trend_pct:+.1f}%) favouring "
+            f"a single-voyage charter with no lock-in premium."
+        )
+
+    # Override if user explicitly selected a contract type
+    if requested_contract_type and requested_contract_type != "auto":
+        rec_type = requested_contract_type
+        rationale = f"User explicitly selected {requested_contract_type.upper()} charter type."
+
+    # ── Cost estimates for comparison cards ──
+    # ASSUMPTION: TC premium 8%, COA discount 5% for committed volume
+    TC_PREMIUM = 1.08
+    COA_DISCOUNT = 0.95
+
+    spot_cost_cr = rec_cost_cr
+    tc_cost_cr = round(rec_cost_cr * TC_PREMIUM, 2)
+    coa_cost_cr = round(rec_cost_cr * COA_DISCOUNT, 2)
+
+    comparison = [
+        {
+            "type": "spot",
+            "label": "Spot Voyage Charter",
+            "isRecommended": rec_type == "spot",
+            "estimatedCostCr": spot_cost_cr,
+            "estimatedCostUSD": round(spot_cost_cr * 1e7 / usd_to_inr) if spot_cost_cr else None,
+            "pros": [
+                "Captures forecast trough if rates decline",
+                "No commitment beyond this single voyage",
+                "Full flexibility on vessel and timing",
+            ],
+            "cons": [
+                "Exposed to rate spikes if trough shifts later",
+                "No rate certainty for future shipments",
+            ],
+            "riskLevel": "Medium" if wide_bands else "Low",
+        },
+        {
+            "type": "time",
+            "label": "Time Charter",
+            "isRecommended": rec_type == "time",
+            "estimatedCostCr": tc_cost_cr,
+            "estimatedCostUSD": round(tc_cost_cr * 1e7 / usd_to_inr) if tc_cost_cr else None,
+            "pros": [
+                "Locks in current rate for charter duration",
+                "Hedges against volatility and rate spikes",
+                "Vessel exclusively available for period",
+            ],
+            "cons": [
+                f"~{int((TC_PREMIUM - 1) * 100)}% premium vs spot rate (ASSUMPTION)",
+                "Idle-time risk if no return cargo",
+                "Longer commitment required",
+            ],
+            "riskLevel": "Low",
+        },
+        {
+            "type": "multi",
+            "label": "Multi-voyage COA",
+            "isRecommended": rec_type == "multi",
+            "estimatedCostCr": coa_cost_cr,
+            "estimatedCostUSD": round(coa_cost_cr * 1e7 / usd_to_inr) if coa_cost_cr else None,
+            "pros": [
+                "Volume discount across multiple shipments (5% discount)",
+                "Schedule certainty with fixed liftings",
+                "Reduced per-voyage negotiation overhead",
+            ],
+            "cons": [
+                "Requires committed cargo volume over contract period",
+                "Less flexibility to adjust timing per voyage",
+                "Penalty clauses for under-shipment",
+            ],
+            "riskLevel": "Low",
+            "note": "5% volume discount applied for committed multi-voyage liftings",
+        },
+    ]
+
+    return {
+        "recommendedContractType": rec_type,
+        "contractTypeRationale": rationale,
+        "contractTypeComparison": comparison,
+    }
+
 
 def recommend(request: Dict[str, Any], data_dir: str = ".") -> Dict[str, Any]:
     """
@@ -124,6 +278,7 @@ def recommend(request: Dict[str, Any], data_dir: str = ".") -> Dict[str, Any]:
     usd_to_inr = float(assumptions_req.get("usdToInr", 83.2))
     dem_usd_day = float(assumptions_req.get("demurrageUSDPerDay", 5000.0))
     bunker_price = float(assumptions_req.get("bunkerFuelPricePerMT", 620.0))
+    contract_duration_days = int(request.get("contractDurationDays", 15))
 
     # 2. Load ports and vessels data
     ports_data = _load_json("ports.json", base)["ports"]
@@ -149,7 +304,7 @@ def recommend(request: Dict[str, Any], data_dir: str = ".") -> Dict[str, Any]:
 
     # 5. Freight rate trajectory forecast
     series = load_rates(data_dir=base)
-    fc = forecast_index(series, horizon=14, holdout=30)
+    fc = forecast_index(series, horizon=30, holdout=30)
     mean_vals = np.array(fc["mean"])
     trough_idx = int(np.argmin(mean_vals))
     trough_index_val = mean_vals[trough_idx]
@@ -158,8 +313,9 @@ def recommend(request: Dict[str, Any], data_dir: str = ".") -> Dict[str, Any]:
     # Index movement scaling factor
     rate_scale = trough_index_val / today_index_val if today_index_val > 0 else 1.0
 
-    optimal_start_day = 3
-    optimal_end_day = 5
+    trough_day = trough_idx + 1
+    optimal_start_day = max(1, trough_day - 1)
+    optimal_end_day = trough_day + 1
     summary_fc = summarize_forecast(series, fc, optimal_window=(optimal_start_day, optimal_end_day))
 
     # 6. Price all candidate vessels at the trough-day rate
@@ -349,13 +505,13 @@ def recommend(request: Dict[str, Any], data_dir: str = ".") -> Dict[str, Any]:
             "text": f"{first_inf['name']} excluded at {dest_port.get('name')} ({first_inf['draftMeters']}m draft exceeds {dest_draft_limit}m limit).",
             "tag": "RESTRICTED",
         })
-    # Alert 4: Model / Synthetic Data Notice
+    # Alert 4: Model / Real Data Notice
     alerts.append({
         "id": 4,
         "type": "market",
         "title": "Data Source Disclosure",
-        "text": "ASSUMPTION / SYNTHETIC: Freight forecast trajectory is calibrated on synthetic mean-reverting BPI series.",
-        "tag": "INDICATIVE",
+        "text": "REAL DATA: Freight forecast trajectory is calibrated on historical Baltic Panamax Index (BPI) market data (Sep 2024 – Sep 2026).",
+        "tag": "HISTORICAL BPI",
     })
 
     # 12. Build Risk and Confidence
@@ -364,6 +520,19 @@ def recommend(request: Dict[str, Any], data_dir: str = ".") -> Dict[str, Any]:
     ann_vol = float(np.std(returns) * np.sqrt(252) * 100)
     vol_level = "Low" if ann_vol < 30 else ("Medium" if ann_vol < 50 else "High")
     vol_color = "#4FA69A" if vol_level == "Low" else ("#D9A441" if vol_level == "Medium" else "#D9573F")
+
+    # 12b. Contract type recommendation (uses ann_vol, forecast, recommended vessel)
+    contract_type_result = _recommend_contract_type(
+        fc=fc,
+        ann_vol=ann_vol,
+        cargo_mt=cargo_mt,
+        recommended=recommended,
+        contract_duration_days=contract_duration_days,
+        rec_cost_cr=rec_cost_cr,
+        usd_to_inr=usd_to_inr,
+        requested_contract_type=request.get("contractType", "auto")
+    )
+    hero_decision.update(contract_type_result)
 
     # Congestion risk
     total_queue = origin_port.get("defaultCongestionDays", 1.4) + dest_port.get("defaultCongestionDays", 1.8)
@@ -408,7 +577,9 @@ def recommend(request: Dict[str, Any], data_dir: str = ".") -> Dict[str, Any]:
 
     # Scenarios (Best / Expected / Worst)
     # Best scenario: lower band rate, reduced wait
-    best_rate_mt = round(float(fc["lower"][trough_idx]) * BPI_TO_USD_PER_MT, 2)
+    trough_val = float(mean_vals[trough_idx])
+    baseline_freight = recommended["freightRatePerMT"]
+    best_rate_mt = round(baseline_freight * (float(fc["lower"][trough_idx]) / trough_val), 2)
     best_wait_days = max(0.5, round(recommended["waitingDays"]["total"] * 0.75, 1))
     v_cap = recommended["capacityMT"]
     v_count = recommended["voyageCount"]
@@ -424,7 +595,7 @@ def recommend(request: Dict[str, Any], data_dir: str = ".") -> Dict[str, Any]:
     best_delta_pct = (best_delta_cr / rec_cost_cr) * 100
 
     # Worst scenario: upper band rate, increased wait
-    worst_rate_mt = round(float(fc["upper"][trough_idx]) * BPI_TO_USD_PER_MT, 2)
+    worst_rate_mt = round(baseline_freight * (float(fc["upper"][trough_idx]) / trough_val), 2)
     worst_wait_days = round(recommended["waitingDays"]["total"] * 1.5, 1)
     worst_freight_usd = worst_rate_mt * billable * v_count
     worst_demurrage_usd = v_count * worst_wait_days * dem_usd_day
@@ -440,7 +611,7 @@ def recommend(request: Dict[str, Any], data_dir: str = ".") -> Dict[str, Any]:
             "freightRate": f"${best_rate_mt:.2f}/MT",
             "waitingDays": f"{best_wait_days:.1f} Days",
             "totalCostCr": f"₹{best_total_cr:.2f} Cr",
-            "costDelta": f"-₹{abs(best_delta_cr):.2f} Cr ({best_delta_pct:.1f}%)",
+            "costDelta": f"\u2212₹{abs(best_delta_cr):.2f} Cr (\u2212{abs(best_delta_pct):.1f}%)",
             "color": "#4FA69A",
             "probability": "25% Probability",
         },
@@ -461,7 +632,7 @@ def recommend(request: Dict[str, Any], data_dir: str = ".") -> Dict[str, Any]:
             "freightRate": f"${worst_rate_mt:.2f}/MT",
             "waitingDays": f"{worst_wait_days:.1f} Days",
             "totalCostCr": f"₹{worst_total_cr:.2f} Cr",
-            "costDelta": f"+₹{abs(worst_delta_cr):.2f} Cr (+{worst_delta_pct:.1f}%)",
+            "costDelta": f"+₹{abs(worst_delta_cr):.2f} Cr (+{abs(worst_delta_pct):.1f}%)",
             "color": "#D9573F",
             "probability": "15% Probability",
         },

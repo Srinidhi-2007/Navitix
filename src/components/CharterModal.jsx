@@ -28,7 +28,21 @@ export default function CharterModal({ isOpen, onClose, activeRoute, requestPayl
     ? 'MULTI-VOYAGE / COA'
     : 'SPOT CHARTER (SINGLE VOYAGE)';
 
-  const brokerOrderText = `CHARTER FIXTURE ORDER — NAVITIX DISPATCH
+  const todayStr = new Date().toISOString().slice(0, 10);
+  let laycanStart = requestPayload.laycanStart || activeRoute.laycanStart;
+  let laycanEnd = requestPayload.laycanEnd || activeRoute.laycanEnd;
+
+  if (laycanStart && laycanStart < todayStr) {
+    const today = new Date();
+    const futureStart = new Date(today);
+    futureStart.setDate(today.getDate() + 5);
+    const futureEnd = new Date(today);
+    futureEnd.setDate(today.getDate() + 9);
+    laycanStart = futureStart.toISOString().slice(0, 10);
+    laycanEnd = futureEnd.toISOString().slice(0, 10);
+  }
+
+  const brokerOrderText = `CHARTER FIXTURE ORDER — NAVITIX DISPATCH (SAMPLE ORDER)
 REF: NVX-${Math.floor(100000 + Math.random() * 900000)}
 DATE: ${new Date().toISOString().slice(0, 10)}
 ACCOUNT: NAVITIX COMMERCIAL DESK
@@ -37,9 +51,9 @@ CONTRACT TYPE: ${contractTypeLabel}
 DURATION: ${contractDuration} DAYS
 CARGO: ${activeRoute.cargoQuantityMT.toLocaleString()} MT 5% MOLOO ${activeRoute.cargoType.toUpperCase()}
 VESSEL REQ: ${vessel.name.toUpperCase()} (MAX DRAFT ${vessel.draftMeters}M / LOA ${vessel.loaMeters}M)
-LOAD PORT: ${activeRoute.originPort.toUpperCase()} — 1-2 SB 1 SP
-DISCH PORT: ${activeRoute.destinationPort.toUpperCase()} — 1-2 SB 1 SP
-LAYCAN: ${activeRoute.laycanStart} / ${activeRoute.laycanEnd}
+LOAD PORT: ${activeRoute.originPort?.toUpperCase()} — 1-2 SB 1 SP
+DISCH PORT: ${activeRoute.destinationPort?.toUpperCase()} — 1-2 SB 1 SP
+LAYCAN: ${laycanStart} / ${laycanEnd}
 TARGET FREIGHT: USD ${vessel.freightRatePerMT.toFixed(2)} / MT FIOST 
 WAITING / DEMURRAGE: USD 5,000 / DAY PRO-RATA / DESPATCH HALF DEMURRAGE
 TOTAL AUTHORIZED BUDGET: INR ${activeRoute.heroDecision.expectedTotalCostCr} CR (~USD ${activeRoute.heroDecision.expectedTotalCostUSD.toLocaleString()})
@@ -99,7 +113,7 @@ STATUS: FIRM ORDER — TIMING WINDOW ${activeRoute.heroDecision.charterTimingAct
               <div className="text-lg font-mono-num font-bold text-[#F47B3A]">
                 ${vessel.freightRatePerMT.toFixed(2)}<span className="text-xs font-normal text-[#82949A]">/MT</span>
               </div>
-              <div className="text-[10px] text-[#4FA69A] mt-0.5">-5.1% favorable window</div>
+              <div className="text-[10px] text-[#4FA69A] mt-0.5">{activeRoute.freightForecast?.expectedChangePct}% expected change</div>
             </div>
 
             <div className="bg-[#0D1A20] border border-[#30454D] p-3 rounded-lg">
@@ -137,7 +151,7 @@ STATUS: FIRM ORDER — TIMING WINDOW ${activeRoute.heroDecision.charterTimingAct
               <div className="flex items-start space-x-2.5">
                 <CheckCircle2 className="w-4 h-4 text-[#4FA69A] shrink-0 mt-0.5" />
                 <span className="text-[#DCE5E7]">
-                  <strong>Port Draft Clearance:</strong> {vessel.draftMeters}m draft verified against {activeRoute.destinationPort || 'discharge port'} max 14.5m limit.
+                  <strong>Port Draft Clearance:</strong> {vessel.draftMeters}m draft verified against {activeRoute.destinationPort || 'discharge port'} max {(activeRoute.portConstraints?.dischargePort?.maxDraftMeters || 14.5).toFixed(1)}m limit ({( (activeRoute.portConstraints?.dischargePort?.maxDraftMeters || 14.5) - vessel.draftMeters ).toFixed(1)}m underkeel margin).
                 </span>
               </div>
               <div className="flex items-start space-x-2.5">
@@ -149,7 +163,7 @@ STATUS: FIRM ORDER — TIMING WINDOW ${activeRoute.heroDecision.charterTimingAct
               <div className="flex items-start space-x-2.5">
                 <CheckCircle2 className="w-4 h-4 text-[#4FA69A] shrink-0 mt-0.5" />
                 <span className="text-[#DCE5E7]">
-                  <strong>Parcel Capacity Match:</strong> {activeRoute.cargoQuantityMT?.toLocaleString() || '50,000'} MT fits {vessel.name} deadweight envelope.
+                  <strong>Parcel Capacity Match:</strong> {(requestPayload.cargoQuantityMT || activeRoute.cargoQuantityMT || 50000).toLocaleString()} MT fits {vessel.name} deadweight envelope without split-loading.
                 </span>
               </div>
               <div className="flex items-start space-x-2.5">
@@ -161,7 +175,7 @@ STATUS: FIRM ORDER — TIMING WINDOW ${activeRoute.heroDecision.charterTimingAct
               <div className="flex items-start space-x-2.5">
                 <CheckCircle2 className="w-4 h-4 text-[#4FA69A] shrink-0 mt-0.5" />
                 <span className="text-[#DCE5E7]">
-                  <strong>Demurrage Budget:</strong> 3.2 days expected waiting time (₹1.34 Cr) pre-allocated into voyage authorization cap.
+                  <strong>Demurrage Budget:</strong> {vessel.waitingDays?.total || 0} days expected waiting time (₹{vessel.costBreakdownCr?.waitingDemurrage || 0} Cr) pre-allocated into voyage authorization cap.
                 </span>
               </div>
             </div>
@@ -230,7 +244,7 @@ STATUS: FIRM ORDER — TIMING WINDOW ${activeRoute.heroDecision.charterTimingAct
               ) : (
                 <>
                   <Send className="w-4 h-4" />
-                  <span>DISPATCH CHARTER FIXTURE</span>
+                  <span>DISPATCH CHARTER FIXTURE (DEMO)</span>
                 </>
               )}
             </button>
